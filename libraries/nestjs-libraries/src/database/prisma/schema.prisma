@@ -43,6 +43,10 @@ model Organization {
   webhooks          Webhooks[]
   oauthApp          OAuthApp?
   oauthAuthorizations OAuthAuthorization[]
+  brandContexts       BrandContext[]
+  mediaFolders        MediaFolder[]
+  imageTemplates      ImageTemplate[]
+  plannerConfigs      PlannerConfig[]
 
   @@index([apiKey])
   @@index([streakSince])
@@ -220,7 +224,9 @@ model Media {
   thumbnail          String?
   alt                String?
   thumbnailTimestamp Int?
+  folderId           String?
   organization       Organization        @relation(fields: [organizationId], references: [id])
+  folder             MediaFolder?        @relation(fields: [folderId], references: [id])
   agencies           SocialMediaAgency[]
   userPicture        User[]
   oauthApps          OAuthApp[]
@@ -228,6 +234,7 @@ model Media {
   @@index([name])
   @@index([organizationId])
   @@index([type])
+  @@index([folderId])
 }
 
 model SocialMediaAgency {
@@ -941,4 +948,91 @@ enum ShortLinkPreference {
   ASK
   YES
   NO
+}
+
+// === White-Label Plugin Suite Models ===
+
+enum BrandContextType {
+  project
+  company
+  voice
+  compliance
+}
+
+model BrandContext {
+  id             String           @id @default(uuid())
+  organizationId String
+  name           String
+  type           BrandContextType @default(project)
+  content        String           @db.Text
+  isActive       Boolean          @default(true)
+  priority       Int              @default(0)
+  projectTag     String?
+  location       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([projectTag])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+model MediaFolder {
+  id             String        @id @default(uuid())
+  name           String
+  type           String        @default("general")
+  organizationId String
+  parentId       String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  parent         MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children       MediaFolder[] @relation("FolderHierarchy")
+  media          Media[]
+
+  @@index([organizationId])
+  @@index([parentId])
+  @@index([type])
+  @@index([deletedAt])
+}
+
+model ImageTemplate {
+  id             String       @id @default(uuid())
+  organizationId String
+  projectTag     String?
+  name           String
+  visualRules    Json?
+  promptSkeleton String       @db.Text
+  linkedAssetIds Json?
+  isDefault      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([projectTag])
+  @@index([isDefault])
+  @@index([deletedAt])
+}
+
+model PlannerConfig {
+  id                  String       @id @default(uuid())
+  organizationId      String
+  projectTag          String
+  postsPerWeek        Int          @default(3)
+  preferredCategories Json?
+  contentGuidelines   String?      @db.Text
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  deletedAt           DateTime?
+  organization        Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([projectTag])
+  @@index([deletedAt])
 }

@@ -180,9 +180,10 @@ export class MediaController {
   @Get('/')
   getMedia(
     @GetOrgFromRequest() org: Organization,
-    @Query('page') page: number
+    @Query('page') page: number,
+    @Query('folderId') folderId?: string
   ) {
-    return this._mediaService.getMedia(org.id, page);
+    return this._mediaService.getMedia(org.id, page, folderId);
   }
 
   @Get('/video-options')

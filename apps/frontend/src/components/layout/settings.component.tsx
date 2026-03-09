@@ -32,6 +32,7 @@ import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import { SVGLine } from '@gitroom/frontend/components/launches/launches.component';
 import { GlobalSettings } from '@gitroom/frontend/components/settings/global.settings';
 import { ApprovedAppsComponent } from '@gitroom/frontend/components/approved-apps/approved-apps.component';
+import { BrandContextSettings } from '@gitroom/frontend/components/brand-context/brand-context-settings';
 export const SettingsPopup: FC<{
   getRef?: Ref<any>;
 }> = (props) => {
@@ -106,6 +107,7 @@ export const SettingsPopup: FC<{
     if (user?.tier?.public_api && isGeneral && showLogout) {
       arr.push({ tab: 'api', label: t('developers', 'Developers') });
     }
+    arr.push({ tab: 'brand_context', label: t('brand_context', 'Brand Context') });
     arr.push({ tab: 'approved_apps', label: t('approved_apps', 'Approved Apps') });
 
     return arr;
@@ -203,6 +205,12 @@ export const SettingsPopup: FC<{
                     <PublicComponent />
                   </div>
                 )}
+
+              {tab === 'brand_context' && (
+                <div>
+                  <BrandContextSettings />
+                </div>
+              )}
 
               {tab === 'approved_apps' && (
                 <div>

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+import { Readable } from 'stream';
+import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
 import { shuffle } from 'lodash';
-import { zodResponseFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const PicturePrompt = z.object({
   prompt: z.string(),
@@ -18,109 +18,111 @@ const VoicePrompt = z.object({
 
 @Injectable()
 export class OpenaiService {
-  async generateImage(prompt: string, isUrl: boolean, isVertical = false) {
-    const generate = (
-      await openai.images.generate({
-        prompt,
-        response_format: isUrl ? 'url' : 'b64_json',
-        model: 'dall-e-3',
-        ...(isVertical ? { size: '1024x1792' } : {}),
-      })
-    ).data[0];
+  private storage = UploadFactory.createStorage();
 
-    return isUrl ? generate.url : generate.b64_json;
+  async generateImage(prompt: string, isUrl: boolean, isVertical = false) {
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: [{ text: prompt }],
+      config: { responseModalities: ['IMAGE', 'TEXT'] },
+    });
+    const part = result.candidates?.[0]?.content?.parts?.find(
+      (p: any) => p.inlineData
+    );
+    if (!part?.inlineData) throw new Error('Image generation failed');
+    if (!isUrl) return part.inlineData.data;
+    const buffer = Buffer.from(part.inlineData.data!, 'base64');
+    const { path } = await this.storage.uploadFile({
+      buffer,
+      mimetype: 'image/png',
+      size: buffer.length,
+      path: '',
+      fieldname: '',
+      destination: '',
+      stream: new Readable(),
+      filename: '',
+      originalname: '',
+      encoding: '',
+    });
+    return path.indexOf('http') === -1
+      ? process.env.FRONTEND_URL +
+          '/' +
+          process.env.NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY +
+          path
+      : path;
   }
 
   async generatePromptForPicture(prompt: string) {
-    return (
-      (
-        await openai.chat.completions.parse({
-          model: 'gpt-4.1',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an assistant that take a description and style and generate a prompt that will be used later to generate images, make it a very long and descriptive explanation, and write a lot of things for the renderer like, if it${"'"}s realistic describe the camera`,
-            },
-            {
-              role: 'user',
-              content: `prompt: ${prompt}`,
-            },
-          ],
-          response_format: zodResponseFormat(PicturePrompt, 'picturePrompt'),
-        })
-      ).choices[0].message.parsed?.prompt || ''
-    );
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You are an assistant that take a description and style and generate a prompt that will be used later to generate images, make it a very long and descriptive explanation, and write a lot of things for the renderer like, if it's realistic describe the camera\n\nprompt: ${prompt}`,
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: zodToJsonSchema(PicturePrompt) as any,
+      },
+    });
+    try {
+      return JSON.parse(result.text || '{}').prompt || '';
+    } catch {
+      return '';
+    }
   }
 
   async generateVoiceFromText(prompt: string) {
-    return (
-      (
-        await openai.chat.completions.parse({
-          model: 'gpt-4.1',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an assistant that takes a social media post and convert it to a normal human voice, to be later added to a character, when a person talk they don\'t use "-", and sometimes they add pause with "..." to make it sounds more natural, make sure you use a lot of pauses and make it sound like a real person`,
-            },
-            {
-              role: 'user',
-              content: `prompt: ${prompt}`,
-            },
-          ],
-          response_format: zodResponseFormat(VoicePrompt, 'voice'),
-        })
-      ).choices[0].message.parsed?.voice || ''
-    );
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You are an assistant that takes a social media post and convert it to a normal human voice, to be later added to a character, when a person talk they don't use "-", and sometimes they add pause with "..." to make it sounds more natural, make sure you use a lot of pauses and make it sound like a real person\n\nprompt: ${prompt}`,
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: zodToJsonSchema(VoicePrompt) as any,
+      },
+    });
+    try {
+      return JSON.parse(result.text || '{}').voice || '';
+    } catch {
+      return '';
+    }
   }
 
   async generatePosts(content: string) {
-    const posts = (
-      await Promise.all([
-        openai.chat.completions.create({
-          messages: [
-            {
-              role: 'assistant',
-              content:
-                'Generate a Twitter post from the content without emojis in the following JSON format: { "post": string } put it in an array with one element',
-            },
-            {
-              role: 'user',
-              content: content!,
-            },
-          ],
-          n: 5,
-          temperature: 1,
-          model: 'gpt-4.1',
-        }),
-        openai.chat.completions.create({
-          messages: [
-            {
-              role: 'assistant',
-              content:
-                'Generate a thread for social media in the following JSON format: Array<{ "post": string }> without emojis',
-            },
-            {
-              role: 'user',
-              content: content!,
-            },
-          ],
-          n: 5,
-          temperature: 1,
-          model: 'gpt-4.1',
-        }),
-      ])
-    ).flatMap((p) => p.choices);
+    const [singleResults, threadResults] = await Promise.all([
+      Promise.all(
+        Array(5)
+          .fill(null)
+          .map(() =>
+            ai.models.generateContent({
+              model: 'gemini-2.5-flash',
+              contents: `Generate a Twitter post from the content without emojis in the following JSON format: { "post": string } put it in an array with one element\n\n${content}`,
+              config: { temperature: 1 },
+            })
+          )
+      ),
+      Promise.all(
+        Array(5)
+          .fill(null)
+          .map(() =>
+            ai.models.generateContent({
+              model: 'gemini-2.5-flash',
+              contents: `Generate a thread for social media in the following JSON format: Array<{ "post": string }> without emojis\n\n${content}`,
+              config: { temperature: 1 },
+            })
+          )
+      ),
+    ]);
+
+    const allTexts = [...singleResults, ...threadResults].map(
+      (r) => r.text || ''
+    );
 
     return shuffle(
-      posts.map((choice) => {
-        const { content } = choice.message;
-        const start = content?.indexOf('[')!;
-        const end = content?.lastIndexOf(']')!;
+      allTexts.map((text) => {
+        const start = text.indexOf('[');
+        const end = text.lastIndexOf(']');
         try {
           return JSON.parse(
             '[' +
-              content
-                ?.slice(start + 1, end)
+              text
+                .slice(start + 1, end)
                 .replace(/\n/g, ' ')
                 .replace(/ {2,}/g, ' ') +
               ']'
@@ -131,25 +133,14 @@ export class OpenaiService {
       })
     );
   }
+
   async extractWebsiteText(content: string) {
-    const websiteContent = await openai.chat.completions.create({
-      messages: [
-        {
-          role: 'assistant',
-          content:
-            'You take a full website text, and extract only the article content',
-        },
-        {
-          role: 'user',
-          content,
-        },
-      ],
-      model: 'gpt-4.1',
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You take a full website text, and extract only the article content\n\n${content}`,
     });
-
-    const { content: articleContent } = websiteContent.choices[0].message;
-
-    return this.generatePosts(articleContent!);
+    const articleContent = result.text || '';
+    return this.generatePosts(articleContent);
   }
 
   async separatePosts(content: string, len: number) {
@@ -161,28 +152,24 @@ export class OpenaiService {
       post: z.string().max(len),
     });
 
-    const posts =
-      (
-        await openai.chat.completions.parse({
-          model: 'gpt-4.1',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an assistant that take a social media post and break it to a thread, each post must be minimum ${
-                len - 10
-              } and maximum ${len} characters, keeping the exact wording and break lines, however make sure you split posts based on context`,
-            },
-            {
-              role: 'user',
-              content: content,
-            },
-          ],
-          response_format: zodResponseFormat(
-            SeparatePostsPrompt,
-            'separatePosts'
-          ),
-        })
-      ).choices[0].message.parsed?.posts || [];
+    const postsResult = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You are an assistant that take a social media post and break it to a thread, each post must be minimum ${
+        len - 10
+      } and maximum ${len} characters, keeping the exact wording and break lines, however make sure you split posts based on context\n\n${content}`,
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: zodToJsonSchema(SeparatePostsPrompt) as any,
+      },
+    });
+
+    const posts: string[] = (() => {
+      try {
+        return JSON.parse(postsResult.text || '{}').posts || [];
+      } catch {
+        return [];
+      }
+    })();
 
     return {
       posts: await Promise.all(
@@ -194,27 +181,17 @@ export class OpenaiService {
           let retries = 4;
           while (retries) {
             try {
-              return (
-                (
-                  await openai.chat.completions.parse({
-                    model: 'gpt-4.1',
-                    messages: [
-                      {
-                        role: 'system',
-                        content: `You are an assistant that take a social media post and shrink it to be maximum ${len} characters, keeping the exact wording and break lines`,
-                      },
-                      {
-                        role: 'user',
-                        content: post,
-                      },
-                    ],
-                    response_format: zodResponseFormat(
-                      SeparatePostPrompt,
-                      'separatePost'
-                    ),
-                  })
-                ).choices[0].message.parsed?.post || ''
-              );
+              const shrinkResult = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: `You are an assistant that take a social media post and shrink it to be maximum ${len} characters, keeping the exact wording and break lines\n\n${post}`,
+                config: {
+                  responseMimeType: 'application/json',
+                  responseJsonSchema: zodToJsonSchema(
+                    SeparatePostPrompt
+                  ) as any,
+                },
+              });
+              return JSON.parse(shrinkResult.text || '{}').post || '';
             } catch (e) {
               retries--;
             }
@@ -227,40 +204,30 @@ export class OpenaiService {
   }
 
   async generateSlidesFromText(text: string) {
+    const SlidesSchema = z.object({
+      slides: z
+        .array(
+          z.object({
+            imagePrompt: z.string(),
+            voiceText: z.string(),
+          })
+        )
+        .describe('an array of slides'),
+    });
+
     for (let i = 0; i < 3; i++) {
       try {
         const message = `You are an assistant that takes a text and break it into slides, each slide should have an image prompt and voice text to be later used to generate a video and voice, image prompt should capture the essence of the slide and also have a back dark gradient on top, image prompt should not contain text in the picture, generate between 3-5 slides maximum`;
-        const parse =
-          (
-            await openai.chat.completions.parse({
-              model: 'gpt-4.1',
-              messages: [
-                {
-                  role: 'system',
-                  content: message,
-                },
-                {
-                  role: 'user',
-                  content: text,
-                },
-              ],
-              response_format: zodResponseFormat(
-                z.object({
-                  slides: z
-                    .array(
-                      z.object({
-                        imagePrompt: z.string(),
-                        voiceText: z.string(),
-                      })
-                    )
-                    .describe('an array of slides'),
-                }),
-                'slides'
-              ),
-            })
-          ).choices[0].message.parsed?.slides || [];
-
-        return parse;
+        const result = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: `${message}\n\n${text}`,
+          config: {
+            responseMimeType: 'application/json',
+            responseJsonSchema: zodToJsonSchema(SlidesSchema) as any,
+          },
+        });
+        const parsed = JSON.parse(result.text || '{}').slides || [];
+        return parsed;
       } catch (err) {
         console.log(err);
       }

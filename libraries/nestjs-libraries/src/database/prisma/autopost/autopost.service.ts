@@ -6,7 +6,8 @@ import { END, START, StateGraph } from '@langchain/langgraph';
 import { AutoPost, Integration } from '@prisma/client';
 import { BaseMessage } from '@langchain/core/messages';
 import striptags from 'striptags';
-import { ChatOpenAI, DallEAPIWrapper } from '@langchain/openai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { GoogleGenAI } from '@google/genai';
 import { JSDOM } from 'jsdom';
 import { z } from 'zod';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -35,16 +36,25 @@ interface WorkflowChannelsState {
   };
 }
 
-const model = new ChatOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-4.1',
-  temperature: 0.7,
-});
+let _model: ChatGoogleGenerativeAI | undefined;
+const getModel = () => {
+  if (!_model) {
+    _model = new ChatGoogleGenerativeAI({
+      apiKey: process.env.GEMINI_API_KEY || '',
+      model: 'gemini-2.5-flash',
+      temperature: 0.7,
+    });
+  }
+  return _model;
+};
 
-const dalle = new DallEAPIWrapper({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-image-1',
-});
+let _geminiAi: GoogleGenAI | undefined;
+const getGeminiAi = () => {
+  if (!_geminiAi) {
+    _geminiAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+  }
+  return _geminiAi;
+};
 
 const generateContent = z.object({
   socialMediaPostContent: z
@@ -55,7 +65,7 @@ const generateContent = z.object({
 const dallePrompt = z.object({
   generatedTextToBeSentToDallE: z
     .string()
-    .describe('Generated prompt from description to be sent to DallE'),
+    .describe('Generated prompt from description to be sent to image generator'),
 });
 
 @Injectable()
@@ -215,7 +225,7 @@ export class AutopostService {
       };
     }
 
-    const structuredOutput = model.withStructuredOutput(generateContent);
+    const structuredOutput = getModel().withStructuredOutput(generateContent);
     const { socialMediaPostContent } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets raw 'description' of a content and generate a social media post content.
@@ -242,7 +252,7 @@ export class AutopostService {
   }
 
   async generatePicture(state: WorkflowChannelsState) {
-    const structuredOutput = model.withStructuredOutput(dallePrompt);
+    const structuredOutput = getModel().withStructuredOutput(dallePrompt);
     const { generatedTextToBeSentToDallE } =
       await ChatPromptTemplate.fromTemplate(
         `
@@ -257,7 +267,14 @@ export class AutopostService {
           content: state.load.description || state.description,
         });
 
-    const image = await dalle.invoke(generatedTextToBeSentToDallE);
+    const imageResult = await getGeminiAi().models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: [{ text: generatedTextToBeSentToDallE }],
+      config: { responseModalities: ['IMAGE', 'TEXT'] },
+    });
+    const imgPart = imageResult.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    if (!imgPart?.inlineData) return { ...state, image: '' };
+    const image = `data:image/png;base64,${imgPart.inlineData.data}`;
 
     return { ...state, image };
   }

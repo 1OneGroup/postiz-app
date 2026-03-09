@@ -1,41 +1,54 @@
 import { Injectable } from '@nestjs/common';
+import { GoogleGenAI } from '@google/genai';
+import { UploadFactory } from '@gitroom/nestjs-libraries/upload/upload.factory';
+import { Readable } from 'stream';
 
-import pLimit from 'p-limit';
-const limit = pLimit(10);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 @Injectable()
 export class FalService {
+  private storage = UploadFactory.createStorage();
+
   async generateImageFromText(
     model: string,
     text: string,
     isVertical: boolean = false
   ): Promise<string> {
-    const { images, video, ...all } = await (
-      await limit(() =>
-        fetch(`https://fal.run/fal-ai/${model}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Key ${process.env.FAL_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            prompt: text,
-            aspect_ratio: isVertical ? '9:16' : '16:9',
-            resolution: '720p',
-            num_images: 1,
-            output_format: 'jpeg',
-            expand_prompt: true,
-          }),
-        })
-      )
-    ).json();
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-exp',
+      contents: [{ text }],
+      config: {
+        responseModalities: ['IMAGE', 'TEXT'],
+      },
+    });
 
-    console.log(all, video, images);
+    const part = result.candidates?.[0]?.content?.parts?.find(
+      (p: any) => p.inlineData
+    );
 
-    if (video) {
-      return video.url;
+    if (!part?.inlineData) {
+      throw new Error('Gemini image generation failed');
     }
 
-    return images[0].url as string;
+    const buffer = Buffer.from(part.inlineData.data!, 'base64');
+    const { path } = await this.storage.uploadFile({
+      buffer,
+      mimetype: 'image/png',
+      size: buffer.length,
+      path: '',
+      fieldname: '',
+      destination: '',
+      stream: new Readable(),
+      filename: '',
+      originalname: '',
+      encoding: '',
+    });
+
+    return path.indexOf('http') === -1
+      ? process.env.FRONTEND_URL +
+        '/' +
+        process.env.NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY +
+        path
+      : path;
   }
 }

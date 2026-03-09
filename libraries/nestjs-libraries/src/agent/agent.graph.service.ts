@@ -5,7 +5,9 @@ import {
   ToolMessage,
 } from '@langchain/core/messages';
 import { END, START, StateGraph } from '@langchain/langgraph';
-import { ChatOpenAI, DallEAPIWrapper } from '@langchain/openai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { GoogleGenAI } from '@google/genai';
+import { Readable } from 'stream';
 import { TavilySearchResults } from '@langchain/community/tools/tavily_search';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -21,16 +23,17 @@ const tools = !process.env.TAVILY_API_KEY
   : [new TavilySearchResults({ maxResults: 3 })];
 const toolNode = new ToolNode(tools);
 
-const model = new ChatOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'gpt-4.1',
-  temperature: 0.7,
-});
-
-const dalle = new DallEAPIWrapper({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-proj-',
-  model: 'dall-e-3',
-});
+let _model: ChatGoogleGenerativeAI | undefined;
+const getModel = () => {
+  if (!_model) {
+    _model = new ChatGoogleGenerativeAI({
+      apiKey: process.env.GEMINI_API_KEY || '',
+      model: 'gemini-2.5-flash',
+      temperature: 0.7,
+    });
+  }
+  return _model;
+};
 
 interface WorkflowChannelsState {
   messages: BaseMessage[];
@@ -132,7 +135,7 @@ export class AgentGraphService {
     });
 
   async startCall(state: WorkflowChannelsState) {
-    const runTools = model.bindTools(tools);
+    const runTools = getModel().bindTools(tools);
     const response = await ChatPromptTemplate.fromTemplate(
       `
     Today is ${dayjs().format()}, You are an assistant that gets a social media post or requests for a social media post.
@@ -156,7 +159,7 @@ export class AgentGraphService {
 
   async findCategories(state: WorkflowChannelsState) {
     const allCategories = await this._postsService.findAllExistingCategories();
-    const structuredOutput = model.withStructuredOutput(category);
+    const structuredOutput = getModel().withStructuredOutput(category);
     const { category: outputCategory } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets a text that will be later summarized into a social media post
@@ -183,7 +186,7 @@ export class AgentGraphService {
       return { topic: null };
     }
 
-    const structuredOutput = model.withStructuredOutput(topic);
+    const structuredOutput = getModel().withStructuredOutput(topic);
     const { topic: outputTopic } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets a text that will be later summarized into a social media post
@@ -211,7 +214,7 @@ export class AgentGraphService {
   }
 
   async generateHook(state: WorkflowChannelsState) {
-    const structuredOutput = model.withStructuredOutput(hook);
+    const structuredOutput = getModel().withStructuredOutput(hook);
     const { hook: outputHook } = await ChatPromptTemplate.fromTemplate(
       `
         You are an assistant that gets content for a social media post, and generate only the hook.
@@ -253,7 +256,7 @@ export class AgentGraphService {
   }
 
   async generateContent(state: WorkflowChannelsState) {
-    const structuredOutput = model.withStructuredOutput(
+    const structuredOutput = getModel().withStructuredOutput(
       contentZod(!!state.isPicture, state.format)
     );
     const { content: outputContent } = await ChatPromptTemplate.fromTemplate(
@@ -318,19 +321,29 @@ export class AgentGraphService {
       return {};
     }
 
+    const geminiAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
     const newContent = await Promise.all(
       (state.content || []).map(async (p) => {
-        const image = await dalle.invoke(p.prompt!);
-        return {
-          ...p,
-          image,
-        };
+        const result = await geminiAi.models.generateContent({
+          model: 'gemini-2.0-flash-exp',
+          contents: [{ text: p.prompt! }],
+          config: { responseModalities: ['IMAGE', 'TEXT'] },
+        });
+        const part = result.candidates?.[0]?.content?.parts?.find((pt: any) => pt.inlineData);
+        if (!part?.inlineData) return p;
+        const buffer = Buffer.from(part.inlineData.data!, 'base64');
+        const { path } = await this.storage.uploadFile({
+          buffer, mimetype: 'image/png', size: buffer.length,
+          path: '', fieldname: '', destination: '', stream: new Readable(), filename: '', originalname: '', encoding: '',
+        });
+        const imageUrl = path.indexOf('http') === -1
+          ? process.env.FRONTEND_URL + '/' + process.env.NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY + path
+          : path;
+        return { ...p, image: imageUrl };
       })
     );
 
-    return {
-      content: newContent,
-    };
+    return { content: newContent };
   }
 
   async uploadPictures(state: WorkflowChannelsState) {

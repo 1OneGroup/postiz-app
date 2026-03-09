@@ -72,21 +72,20 @@ export class MediaRepository {
     });
   }
 
-  async getMedia(org: string, page: number) {
+  async getMedia(org: string, page: number, folderId?: string) {
     const pageNum = (page || 1) - 1;
-    const query = {
-      where: {
-        organization: {
-          id: org,
-        },
-      },
+    const whereClause: any = {
+      organizationId: org,
+      deletedAt: null,
     };
-    const pages = Math.ceil((await this._media.model.media.count(query)) / 18);
+
+    if (folderId) {
+      whereClause.folderId = folderId;
+    }
+
+    const pages = Math.ceil((await this._media.model.media.count({ where: whereClause })) / 18);
     const results = await this._media.model.media.findMany({
-      where: {
-        organizationId: org,
-        deletedAt: null,
-      },
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },
@@ -98,6 +97,7 @@ export class MediaRepository {
         thumbnail: true,
         alt: true,
         thumbnailTimestamp: true,
+        folderId: true,
       },
       skip: pageNum * 18,
       take: 18,

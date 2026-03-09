@@ -12,6 +12,10 @@ import { VideoModule } from '@gitroom/nestjs-libraries/videos/video.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { FILTER } from '@gitroom/nestjs-libraries/sentry/sentry.exception';
 import { ChatModule } from '@gitroom/nestjs-libraries/chat/chat.module';
+import { BrandContextModule } from '@gitroom/nestjs-libraries/brand-context/brand-context.module';
+import { MediaFoldersModule } from '@gitroom/nestjs-libraries/media-folders/media-folders.module';
+import { ImageTemplatesModule } from '@gitroom/nestjs-libraries/image-templates/image-templates.module';
+import { MonthlyPlannerModule } from '@gitroom/nestjs-libraries/monthly-planner/monthly-planner.module';
 import { getTemporalModule } from '@gitroom/nestjs-libraries/temporal/temporal.module';
 import { TemporalRegisterMissingSearchAttributesModule } from '@gitroom/nestjs-libraries/temporal/temporal.register';
 import { InfiniteWorkflowRegisterModule } from '@gitroom/nestjs-libraries/temporal/infinite.workflow.register';
@@ -29,6 +33,10 @@ import { ioRedis } from '@gitroom/nestjs-libraries/redis/redis.service';
     ThirdPartyModule,
     VideoModule,
     ChatModule,
+    BrandContextModule,
+    MediaFoldersModule,
+    ImageTemplatesModule,
+    MonthlyPlannerModule,
     getTemporalModule(false),
     TemporalRegisterMissingSearchAttributesModule,
     InfiniteWorkflowRegisterModule,

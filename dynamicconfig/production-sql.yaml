@@ -1,0 +1,4 @@
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+# NOTE: forceSearchAttributesCacheRefreshOnRead removed (dev-only setting)

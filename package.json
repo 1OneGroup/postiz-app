@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@ag-ui/mastra": "0.2.0",
+    "@ai-sdk/google": "^3.0.43",
     "@ai-sdk/openai": "^2.0.52",
     "@atproto/api": "^0.15.15",
     "@aws-sdk/client-s3": "^3.787.0",
@@ -53,9 +54,11 @@
     "@copilotkit/react-ui": "1.10.6",
     "@copilotkit/runtime": "1.10.6",
     "@dub/analytics": "^0.0.32",
+    "@google/genai": "^1.44.0",
     "@hookform/resolvers": "^3.3.4",
     "@langchain/community": "^0.3.40",
     "@langchain/core": "^0.3.44",
+    "@langchain/google-genai": "^0.1.12",
     "@langchain/langgraph": "^0.2.63",
     "@langchain/openai": "^0.5.5",
     "@mantine/core": "^5.10.5",
@@ -249,6 +252,7 @@
     "yargs": "^17.7.2",
     "yup": "^1.4.0",
     "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.1",
     "zustand": "^5.0.5"
   },
   "devDependencies": {
@@ -321,7 +325,19 @@
       "next": "14.2.35"
     },
     "onlyBuiltDependencies": [
-      "bcrypt"
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "esbuild",
+      "@swc/core",
+      "bcrypt",
+      "@nestjs/core",
+      "@parcel/watcher",
+      "bufferutil",
+      "utf-8-validate",
+      "protobufjs",
+      "unrs-resolver"
     ]
   }
 }
