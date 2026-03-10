@@ -36,6 +36,7 @@ import { MoltbookProvider } from '@gitroom/nestjs-libraries/integrations/social/
 import { SkoolProvider } from '@gitroom/nestjs-libraries/integrations/social/skool.provider';
 import { WhopProvider } from '@gitroom/nestjs-libraries/integrations/social/whop.provider';
 import { MeweProvider } from '@gitroom/nestjs-libraries/integrations/social/mewe.provider';
+import { TestProvider } from '@gitroom/nestjs-libraries/integrations/social/test.provider';
 
 export const socialIntegrationList: Array<SocialAbstract & SocialProvider> = [
   new XProvider(),
@@ -70,6 +71,7 @@ export const socialIntegrationList: Array<SocialAbstract & SocialProvider> = [
   new MoltbookProvider(),
   new WhopProvider(),
   new SkoolProvider(),
+  new TestProvider(),
   // new MeweProvider(),
   // new MastodonCustomProvider(),
 ];
