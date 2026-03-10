@@ -43,7 +43,10 @@ if [ "$STATUS" != "healthy" ] && [ "$HTTP_CODE" = "000" ]; then
 fi
 
 echo "=== Pruning old images ==="
-docker image prune -f --filter "until=24h"
+# Remove all dangling (untagged) images — these are old builds replaced by :latest
+docker image prune -f
+# Remove any unused images not referenced by running containers
+docker image prune -a -f --filter "until=2h"
 
 echo "=== Deploy complete ==="
 docker compose -f "$COMPOSE_FILE" ps postiz
