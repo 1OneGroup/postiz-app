@@ -10,7 +10,7 @@ overrides:
 
 patchedDependencies:
   '@mastra/core@0.20.2':
-    hash: 283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c
+    hash: 2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730
     path: patches/@mastra__core@0.20.2.patch
 
 importers:
@@ -19,7 +19,7 @@ importers:
     dependencies:
       '@ag-ui/mastra':
         specifier: 0.2.0
-        version: 0.2.0(@ag-ui/client@0.0.47)(@ag-ui/core@0.0.47)(@copilotkit/runtime@1.10.6(58a80ca42b61ee755605c4929988e285))(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+        version: 0.2.0(@ag-ui/client@0.0.47)(@ag-ui/core@0.0.47)(@copilotkit/runtime@1.10.6(58a80ca42b61ee755605c4929988e285))(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       '@ai-sdk/google':
         specifier: ^3.0.43
         version: 3.0.43(zod@3.25.76)
@@ -88,13 +88,13 @@ importers:
         version: 5.10.5(@mantine/core@5.10.5(@emotion/react@11.14.0(@types/react@18.3.1)(react@18.3.1))(@mantine/hooks@5.10.5(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@mantine/hooks@5.10.5(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mastra/core':
         specifier: ^0.20.2
-        version: 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+        version: 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       '@mastra/memory':
         specifier: ^0.15.6
-        version: 0.15.13(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(react@18.3.1)(zod@3.25.76)
+        version: 0.15.13(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(react@18.3.1)(zod@3.25.76)
       '@mastra/pg':
         specifier: ^0.17.2
-        version: 0.17.10(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))
+        version: 0.17.10(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))
       '@modelcontextprotocol/sdk':
         specifier: ^1.22.0
         version: 1.27.1(@cfworker/json-schema@4.1.1)(zod@3.25.76)
@@ -433,7 +433,7 @@ importers:
         version: 4.17.23
       mastra:
         specifier: ^0.13.2
-        version: 0.13.4(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@opentelemetry/api@1.9.0)(@types/json-schema@7.0.15)(typescript@5.5.4)(zod@3.25.76)
+        version: 0.13.4(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@opentelemetry/api@1.9.0)(@types/json-schema@7.0.15)(typescript@5.5.4)(zod@3.25.76)
       md5:
         specifier: ^2.3.0
         version: 2.3.0
@@ -17399,14 +17399,14 @@ snapshots:
       - react
       - react-dom
 
-  '@ag-ui/mastra@0.2.0(@ag-ui/client@0.0.47)(@ag-ui/core@0.0.47)(@copilotkit/runtime@1.10.6(58a80ca42b61ee755605c4929988e285))(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)':
+  '@ag-ui/mastra@0.2.0(@ag-ui/client@0.0.47)(@ag-ui/core@0.0.47)(@copilotkit/runtime@1.10.6(58a80ca42b61ee755605c4929988e285))(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)':
     dependencies:
       '@ag-ui/client': 0.0.47
       '@ag-ui/core': 0.0.47
       '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       '@copilotkit/runtime': 1.10.6(58a80ca42b61ee755605c4929988e285)
       '@mastra/client-js': 0.15.2(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       rxjs: 7.8.1
       zod: 3.25.76
     transitivePeerDependencies:
@@ -20982,7 +20982,7 @@ snapshots:
     dependencies:
       '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       '@lukeed/uuid': 2.0.1
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       json-schema: 0.4.0
       rxjs: 7.8.1
       zod: 3.25.76
@@ -21004,7 +21004,7 @@ snapshots:
       - valibot
       - zod-openapi
 
-  '@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)':
+  '@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)':
     dependencies:
       '@a2a-js/sdk': 0.2.5
       '@ai-sdk/anthropic-v5': '@ai-sdk/anthropic@2.0.23(zod@3.25.76)'
@@ -21068,13 +21068,13 @@ snapshots:
       - valibot
       - zod-openapi
 
-  '@mastra/deployer@0.19.1(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(typescript@5.5.4)(zod@3.25.76)':
+  '@mastra/deployer@0.19.1(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(typescript@5.5.4)(zod@3.25.76)':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/helper-module-imports': 7.28.6
       '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
-      '@mastra/server': 0.19.1(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/server': 0.19.1(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(zod@3.25.76)
       '@neon-rs/load': 0.1.82
       '@optimize-lodash/rollup-plugin': 5.1.0(rollup@4.50.2)
       '@rollup/plugin-alias': 5.1.1(rollup@4.50.2)
@@ -21104,16 +21104,16 @@ snapshots:
       - supports-color
       - typescript
 
-  '@mastra/loggers@0.10.19(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))':
+  '@mastra/loggers@0.10.19(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))':
     dependencies:
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       pino: 9.14.0
       pino-pretty: 13.1.3
 
-  '@mastra/mcp@0.13.5(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@types/json-schema@7.0.15)(zod@3.25.76)':
+  '@mastra/mcp@0.13.5(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@types/json-schema@7.0.15)(zod@3.25.76)':
     dependencies:
       '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       '@modelcontextprotocol/sdk': 1.27.1(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       date-fns: 4.1.0
       exit-hook: 4.0.0
@@ -21127,9 +21127,9 @@ snapshots:
       - '@types/json-schema'
       - supports-color
 
-  '@mastra/memory@0.15.13(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(react@18.3.1)(zod@3.25.76)':
+  '@mastra/memory@0.15.13(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(react@18.3.1)(zod@3.25.76)':
     dependencies:
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       '@mastra/schema-compat': 0.11.9(ai@4.3.19(react@18.3.1)(zod@3.25.76))(zod@3.25.76)
       '@upstash/redis': 1.36.3
       ai: 4.3.19(react@18.3.1)(zod@3.25.76)
@@ -21149,9 +21149,9 @@ snapshots:
       - pg-native
       - react
 
-  '@mastra/pg@0.17.10(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))':
+  '@mastra/pg@0.17.10(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(pg-query-stream@4.10.3(pg@8.16.3))':
     dependencies:
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       async-mutex: 0.5.0
       pg: 8.20.0
       pg-promise: 11.15.0(pg-query-stream@4.10.3(pg@8.16.3))
@@ -21179,9 +21179,9 @@ snapshots:
       zod-from-json-schema-v3: zod-from-json-schema@0.0.5
       zod-to-json-schema: 3.25.1(zod@3.25.76)
 
-  '@mastra/server@0.19.1(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(zod@3.25.76)':
+  '@mastra/server@0.19.1(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(zod@3.25.76)':
     dependencies:
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
       zod: 3.25.76
 
   '@meronex/icons@4.0.0(react@18.3.1)':
@@ -33108,14 +33108,14 @@ snapshots:
 
   marky@1.3.0: {}
 
-  mastra@0.13.4(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@opentelemetry/api@1.9.0)(@types/json-schema@7.0.15)(typescript@5.5.4)(zod@3.25.76):
+  mastra@0.13.4(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@opentelemetry/api@1.9.0)(@types/json-schema@7.0.15)(typescript@5.5.4)(zod@3.25.76):
     dependencies:
       '@clack/prompts': 0.11.0
       '@expo/devcert': 1.2.1
-      '@mastra/core': 0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
-      '@mastra/deployer': 0.19.1(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(typescript@5.5.4)(zod@3.25.76)
-      '@mastra/loggers': 0.10.19(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))
-      '@mastra/mcp': 0.13.5(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=283f6bd027bffcd4a92121a5b49864b71d7f15ec6e4f4f73ae1c09cf25f5750c)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@types/json-schema@7.0.15)(zod@3.25.76)
+      '@mastra/core': 0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76)
+      '@mastra/deployer': 0.19.1(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(typescript@5.5.4)(zod@3.25.76)
+      '@mastra/loggers': 0.10.19(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))
+      '@mastra/mcp': 0.13.5(@cfworker/json-schema@4.1.1)(@mastra/core@0.20.2(patch_hash=2acdd7835a4cf7e177ce9ef56a0865eb8d21757c53beb7a1a309399a7b81b730)(openapi-types@12.1.3)(react@18.3.1)(zod@3.25.76))(@types/json-schema@7.0.15)(zod@3.25.76)
       '@opentelemetry/auto-instrumentations-node': 0.62.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))
       '@opentelemetry/core': 2.6.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/exporter-trace-otlp-grpc': 0.203.0(@opentelemetry/api@1.9.0)
