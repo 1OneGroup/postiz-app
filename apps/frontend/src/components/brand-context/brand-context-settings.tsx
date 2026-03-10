@@ -93,22 +93,21 @@ const BrandContextForm: React.FC<{
   );
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    async () => {
+      if (!form.name || !form.content) return;
       await onSave(form);
     },
     [form, onSave]
   );
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
+    <div className="flex flex-col gap-[16px]">
       <div className="flex flex-col gap-[6px]">
         <label className="text-[12px] text-customColor18">
           {t('brand_context_name', 'Name')}
         </label>
         <input
           type="text"
-          required
           value={form.name}
           onChange={(e) => set('name', e.target.value)}
           placeholder={t('brand_context_name_placeholder', 'e.g. Brand Voice Guide')}
@@ -138,7 +137,6 @@ const BrandContextForm: React.FC<{
           {t('brand_context_content', 'Content')}
         </label>
         <textarea
-          required
           value={form.content}
           onChange={(e) => set('content', e.target.value)}
           placeholder={t('brand_context_content_placeholder', 'Describe this brand context block...')}
@@ -205,14 +203,14 @@ const BrandContextForm: React.FC<{
       </div>
 
       <div className="flex gap-[12px]">
-        <Button type="submit" loading={saving}>
+        <Button type="button" loading={saving} onClick={handleSubmit}>
           {t('brand_context_save', 'Save')}
         </Button>
         <Button type="button" secondary onClick={onCancel}>
           {t('cancel', 'Cancel')}
         </Button>
       </div>
-    </form>
+    </div>
   );
 };
 
@@ -273,7 +271,7 @@ export const BrandContextSettings = () => {
   const t = useT();
   const fetch = useFetch();
   const toaster = useToaster();
-  const { data, mutate, isLoading } = useBrandContexts();
+  const { data, mutate, isLoading, error } = useBrandContexts();
 
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<BrandContext | null>(null);
@@ -297,11 +295,16 @@ export const BrandContextSettings = () => {
   const handleSave = useCallback(
     async (values: BrandContextFormState) => {
       setSaving(true);
+      const payload = {
+        ...values,
+        projectTag: values.projectTag || undefined,
+        location: values.location || undefined,
+      };
       try {
         if (editingItem) {
           const response = await fetch(`/brand-context/${editingItem.id}`, {
             method: 'PUT',
-            body: JSON.stringify(values),
+            body: JSON.stringify(payload),
           });
           if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -311,7 +314,7 @@ export const BrandContextSettings = () => {
         } else {
           const response = await fetch('/brand-context', {
             method: 'POST',
-            body: JSON.stringify(values),
+            body: JSON.stringify(payload),
           });
           if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -322,8 +325,8 @@ export const BrandContextSettings = () => {
         await mutate();
         setShowForm(false);
         setEditingItem(null);
-      } catch {
-        toaster.show(t('brand_context_save_error', 'Failed to save brand context'), 'warning');
+      } catch (err: any) {
+        toaster.show(err?.message || t('brand_context_save_error', 'Failed to save brand context'), 'warning');
       } finally {
         setSaving(false);
       }
@@ -347,8 +350,8 @@ export const BrandContextSettings = () => {
         }
         toaster.show(t('brand_context_deleted', 'Brand context deleted'), 'success');
         await mutate();
-      } catch {
-        toaster.show(t('brand_context_delete_error', 'Failed to delete brand context'), 'warning');
+      } catch (err: any) {
+        toaster.show(err?.message || t('brand_context_delete_error', 'Failed to delete brand context'), 'warning');
       }
     },
     [fetch, mutate, toaster, t]
@@ -381,7 +384,13 @@ export const BrandContextSettings = () => {
           </div>
         )}
 
-        {!isLoading && !showForm && (
+        {!isLoading && error && (
+          <div className="text-[12px] text-red-400">
+            {t('brand_context_load_error', 'Failed to load brand contexts. Please try refreshing the page.')}
+          </div>
+        )}
+
+        {!isLoading && !error && !showForm && (
           <>
             {items.length === 0 && (
               <div className="text-[12px] text-customColor18">
