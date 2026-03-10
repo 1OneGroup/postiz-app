@@ -16,6 +16,8 @@ import { BrandContextModule } from '@gitroom/nestjs-libraries/brand-context/bran
 import { MediaFoldersModule } from '@gitroom/nestjs-libraries/media-folders/media-folders.module';
 import { ImageTemplatesModule } from '@gitroom/nestjs-libraries/image-templates/image-templates.module';
 import { MonthlyPlannerModule } from '@gitroom/nestjs-libraries/monthly-planner/monthly-planner.module';
+import { ProjectModule } from '@gitroom/nestjs-libraries/projects/project.module';
+import { ProjectChatModule } from '@gitroom/nestjs-libraries/chat/project-agent/project-chat.module';
 import { getTemporalModule } from '@gitroom/nestjs-libraries/temporal/temporal.module';
 import { TemporalRegisterMissingSearchAttributesModule } from '@gitroom/nestjs-libraries/temporal/temporal.register';
 import { InfiniteWorkflowRegisterModule } from '@gitroom/nestjs-libraries/temporal/infinite.workflow.register';
@@ -37,6 +39,8 @@ import { ioRedis } from '@gitroom/nestjs-libraries/redis/redis.service';
     MediaFoldersModule,
     ImageTemplatesModule,
     MonthlyPlannerModule,
+    ProjectModule,
+    ProjectChatModule,
     getTemporalModule(false),
     TemporalRegisterMissingSearchAttributesModule,
     InfiniteWorkflowRegisterModule,
