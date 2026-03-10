@@ -21,6 +21,7 @@ The content should be in HTML format with <p>, <strong>, <ul>, <li> tags.`,
         suggestedDate: z.string().optional().describe('Suggested publish date in UTC ISO format'),
         title: z.string().optional().describe('Optional title for the post idea'),
         notes: z.string().optional().describe('Your reasoning and strategy notes about why this post idea works'),
+        image: z.string().optional().describe('URL of an AI-generated image to attach to the post. Use the generateImage tool first to get this URL.'),
       }),
       outputSchema: z.object({
         output: z.object({
@@ -42,6 +43,7 @@ The content should be in HTML format with <p>, <strong>, <ul>, <li> tags.`,
           suggestedDate: context.suggestedDate,
           title: context.title,
           notes: context.notes,
+          image: context.image,
           aiGenerated: true,
         });
 

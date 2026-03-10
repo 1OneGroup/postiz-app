@@ -20,6 +20,7 @@ export class UpdateSamplePostTool implements AgentToolInterface {
         suggestedDate: z.string().optional().describe('Updated suggested date in UTC ISO format'),
         title: z.string().optional().describe('Updated title'),
         notes: z.string().optional().describe('Updated strategy notes'),
+        image: z.string().optional().describe('URL of an AI-generated image to attach to the post. Use the generateImage tool first to get this URL.'),
       }),
       outputSchema: z.object({
         output: z.object({
@@ -38,6 +39,7 @@ export class UpdateSamplePostTool implements AgentToolInterface {
         if (context.suggestedDate) updateData.suggestedDate = context.suggestedDate;
         if (context.title) updateData.title = context.title;
         if (context.notes) updateData.notes = context.notes;
+        if (context.image) updateData.image = context.image;
 
         const post = await this._projectPostService.update(
           orgId,

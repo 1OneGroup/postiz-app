@@ -69,6 +69,16 @@ export class ProjectLoadToolsService {
         - Use listSamplePosts to check what already exists before suggesting duplicates
         - If the user asks to see existing posts, use listSamplePosts
 
+      IMAGE GENERATION:
+        - You can generate AI images for posts using the generateImage tool
+        - ALWAYS generate an image for every post you create, unless the user explicitly says no images
+        - For visual platforms (Instagram, Pinterest, TikTok), image generation is mandatory
+        - First generate the image using generateImage, then pass the returned imageUrl to createSamplePost or updateSamplePost
+        - Generated images are automatically saved to the Media library with the project name badge
+        - Describe images in detail: include style, colors, composition, mood, and specific visual elements
+        - For best results, describe the scene concretely rather than abstract concepts
+        - Match the image style to the platform (professional for LinkedIn, vibrant for Instagram, etc.)
+
       When the user asks for post suggestions:
         1. First understand their goals, target audience, and tone
         2. Propose 2-3 ideas with platform recommendations
