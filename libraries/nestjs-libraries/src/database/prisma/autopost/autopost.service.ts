@@ -268,7 +268,7 @@ export class AutopostService {
         });
 
     const imageResult = await getGeminiAi().models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-image',
       contents: [{ text: generatedTextToBeSentToDallE }],
       config: { responseModalities: ['IMAGE', 'TEXT'] },
     });

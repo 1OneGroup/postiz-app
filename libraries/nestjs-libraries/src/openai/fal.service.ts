@@ -15,7 +15,7 @@ export class FalService {
     isVertical: boolean = false
   ): Promise<string> {
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-image',
       contents: [{ text }],
       config: {
         responseModalities: ['IMAGE', 'TEXT'],

@@ -325,7 +325,7 @@ export class AgentGraphService {
     const newContent = await Promise.all(
       (state.content || []).map(async (p) => {
         const result = await geminiAi.models.generateContent({
-          model: 'gemini-2.0-flash-exp',
+          model: 'gemini-2.5-flash-image',
           contents: [{ text: p.prompt! }],
           config: { responseModalities: ['IMAGE', 'TEXT'] },
         });

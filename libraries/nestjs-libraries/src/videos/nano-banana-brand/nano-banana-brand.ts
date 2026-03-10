@@ -149,7 +149,7 @@ USER REQUEST: Generate an image showing: ${prompt}`,
     ];
 
     const imageResult = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-image',
       contents: [{ role: 'user', parts: contentParts }],
       config: {
         responseModalities: ['IMAGE', 'TEXT'],

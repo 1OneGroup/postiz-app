@@ -22,7 +22,7 @@ export class OpenaiService {
 
   async generateImage(prompt: string, isUrl: boolean, isVertical = false) {
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.5-flash-image',
       contents: [{ text: prompt }],
       config: { responseModalities: ['IMAGE', 'TEXT'] },
     });
