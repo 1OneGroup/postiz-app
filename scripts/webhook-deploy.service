@@ -1,0 +1,18 @@
+[Unit]
+Description=Postiz Deploy Webhook
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=postiz
+WorkingDirectory=/home/postiz/app
+EnvironmentFile=/home/postiz/app/.env.webhook
+ExecStart=/usr/bin/python3 /home/postiz/app/scripts/webhook-deploy.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=postiz-webhook
+
+[Install]
+WantedBy=multi-user.target
