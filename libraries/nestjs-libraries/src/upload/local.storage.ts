@@ -2,7 +2,7 @@ import { IUploadProvider } from './upload.interface';
 import { mkdirSync, unlink, writeFileSync } from 'fs';
 // @ts-ignore
 import mime from 'mime';
-import { extname } from 'path';
+import { resolveFileExtension } from './upload.utils';
 export class LocalStorage implements IUploadProvider {
   constructor(private uploadDirectory: string) {}
 
@@ -11,7 +11,7 @@ export class LocalStorage implements IUploadProvider {
     const contentType =
       loadImage?.headers?.get('content-type') ||
       loadImage?.headers?.get('Content-Type');
-    const findExtension = mime.getExtension(contentType)!;
+    const findExtension = mime.getExtension(contentType) || 'png';
 
     const now = new Date();
     const year = now.getFullYear();
@@ -51,16 +51,15 @@ export class LocalStorage implements IUploadProvider {
         .map(() => Math.round(Math.random() * 16).toString(16))
         .join('');
 
-      const filePath = `${dir}/${randomName}${extname(file.originalname)}`;
-      const publicPath = `${innerPath}/${randomName}${extname(
-        file.originalname
-      )}`;
+      const ext = resolveFileExtension(file.originalname, file.mimetype);
+      const filePath = `${dir}/${randomName}${ext}`;
+      const publicPath = `${innerPath}/${randomName}${ext}`;
 
       // Logic to save the file to the filesystem goes here
       writeFileSync(filePath, file.buffer);
 
       return {
-        filename: `${randomName}${extname(file.originalname)}`,
+        filename: `${randomName}${ext}`,
         path: process.env.FRONTEND_URL + '/uploads' + publicPath,
         mimetype: file.mimetype,
         originalname: file.originalname,

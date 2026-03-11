@@ -1,11 +1,11 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import 'multer';
 import { makeId } from '@gitroom/nestjs-libraries/services/make.is';
-import mime from 'mime-types';
 // @ts-ignore
 import { getExtension } from 'mime';
 import { IUploadProvider } from './upload.interface';
 import axios from 'axios';
+import { resolveFileExtension } from './upload.utils';
 
 class CloudflareStorage implements IUploadProvider {
   private _client: S3Client;
@@ -62,7 +62,7 @@ class CloudflareStorage implements IUploadProvider {
     const contentType =
       loadImage?.headers?.get('content-type') ||
       loadImage?.headers?.get('Content-Type');
-    const extension = getExtension(contentType)!;
+    const extension = getExtension(contentType) || 'png';
     const id = makeId(10);
 
     const params = {
@@ -82,27 +82,27 @@ class CloudflareStorage implements IUploadProvider {
   async uploadFile(file: Express.Multer.File): Promise<any> {
     try {
       const id = makeId(10);
-      const extension = mime.extension(file.mimetype) || '';
+      const extension = resolveFileExtension(file.originalname, file.mimetype);
 
       // Create the PutObjectCommand to upload the file to Cloudflare R2
       const command = new PutObjectCommand({
         Bucket: this._bucketName,
         ACL: 'public-read',
-        Key: `${id}.${extension}`,
+        Key: `${id}${extension}`,
         Body: file.buffer,
       });
 
       await this._client.send(command);
 
       return {
-        filename: `${id}.${extension}`,
+        filename: `${id}${extension}`,
         mimetype: file.mimetype,
         size: file.size,
         buffer: file.buffer,
-        originalname: `${id}.${extension}`,
+        originalname: `${id}${extension}`,
         fieldname: 'file',
-        path: `${this._uploadUrl}/${id}.${extension}`,
-        destination: `${this._uploadUrl}/${id}.${extension}`,
+        path: `${this._uploadUrl}/${id}${extension}`,
+        destination: `${this._uploadUrl}/${id}${extension}`,
         encoding: '7bit',
         stream: file.buffer as any,
       };
