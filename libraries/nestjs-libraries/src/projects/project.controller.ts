@@ -19,6 +19,7 @@ import { CreateProjectDto } from '@gitroom/nestjs-libraries/projects/dto/create-
 import { UpdateProjectDto } from '@gitroom/nestjs-libraries/projects/dto/update-project.dto';
 import { CreateProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/create-project-post.dto';
 import { UpdateProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/update-project-post.dto';
+import { ScheduleProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/schedule-project-post.dto';
 import { ProjectMastraService } from '@gitroom/nestjs-libraries/chat/project-agent/project-mastra.service';
 import {
   CopilotRuntime,
@@ -122,6 +123,15 @@ export class ProjectController {
     @Param('postId') postId: string
   ) {
     return this._projectPostService.approve(org.id, postId);
+  }
+
+  @Post('/:id/posts/:postId/schedule')
+  scheduleProjectPost(
+    @GetOrgFromRequest() org: Organization,
+    @Param('postId') postId: string,
+    @Body() dto: ScheduleProjectPostDto
+  ) {
+    return this._projectPostService.scheduleToCalendar(org.id, postId, dto);
   }
 
   @Delete('/:id/posts/:postId')

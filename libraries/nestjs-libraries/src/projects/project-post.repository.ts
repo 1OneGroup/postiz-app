@@ -74,6 +74,18 @@ export class ProjectPostRepository {
     });
   }
 
+  markAsConverted(orgId: string, id: string) {
+    return this._projectPost.model.projectPost.update({
+      where: {
+        id,
+        organizationId: orgId,
+      },
+      data: {
+        status: 'CONVERTED',
+      },
+    });
+  }
+
   softDelete(orgId: string, id: string) {
     return this._projectPost.model.projectPost.update({
       where: {

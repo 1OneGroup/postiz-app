@@ -5,6 +5,8 @@ import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import dayjs from 'dayjs';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import ImageWithFallback from '@gitroom/react/helpers/image.with.fallback';
+import { useModals } from '@gitroom/frontend/components/layout/new-modal';
+import { SchedulePostModal } from '@gitroom/frontend/components/projects/schedule-post-modal';
 
 export interface ProjectPostData {
   id: string;
@@ -25,6 +27,7 @@ export const ProjectPostCard: FC<{
 }> = ({ post, projectId, onMutate }) => {
   const fetch = useFetch();
   const t = useT();
+  const modals = useModals();
 
   const handleApprove = useCallback(async () => {
     await fetch(`/projects/${projectId}/posts/${post.id}/approve`, {
@@ -40,9 +43,36 @@ export const ProjectPostCard: FC<{
     onMutate();
   }, [fetch, projectId, post.id, onMutate]);
 
+  const handleSchedule = useCallback(() => {
+    modals.openModal({
+      title: t('schedule_to_calendar', 'Schedule to Calendar'),
+      withCloseButton: true,
+      children: (close: () => void) => (
+        <SchedulePostModal
+          post={post}
+          projectId={projectId}
+          onScheduled={onMutate}
+          closeModal={close}
+        />
+      ),
+    });
+  }, [modals, post, projectId, onMutate]);
+
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   };
+
+  const statusBadgeClass =
+    post.status === 'APPROVED'
+      ? 'bg-green-500/20 text-green-400'
+      : post.status === 'CONVERTED'
+        ? 'bg-blue-500/20 text-blue-400'
+        : 'bg-newTextColor/10 text-newTextColor/50';
+
+  const statusLabel =
+    post.status === 'CONVERTED'
+      ? t('scheduled', 'SCHEDULED')
+      : post.status;
 
   return (
     <div className="bg-newBgColorInner rounded-[12px] p-[16px] border border-fifth/20 flex flex-col gap-[10px]">
@@ -59,13 +89,9 @@ export const ProjectPostCard: FC<{
             />
           )}
           <span
-            className={`text-[11px] px-[8px] py-[2px] rounded-full ${
-              post.status === 'APPROVED'
-                ? 'bg-green-500/20 text-green-400'
-                : 'bg-newTextColor/10 text-newTextColor/50'
-            }`}
+            className={`text-[11px] px-[8px] py-[2px] rounded-full ${statusBadgeClass}`}
           >
-            {post.status}
+            {statusLabel}
           </span>
           {post.aiGenerated && (
             <span className="text-[11px] px-[8px] py-[2px] rounded-full bg-purple-500/20 text-purple-400">
@@ -89,6 +115,29 @@ export const ProjectPostCard: FC<{
               >
                 <path
                   d="M20 6L9 17L4 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
+          {post.status === 'APPROVED' && (
+            <button
+              onClick={handleSchedule}
+              className="text-[12px] px-[8px] py-[4px] rounded-md hover:bg-blue-500/20 text-blue-400 transition-colors"
+              title={t('schedule_to_calendar', 'Schedule to Calendar')}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M8 2V6M16 2V6M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
