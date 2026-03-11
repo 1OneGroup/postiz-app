@@ -79,6 +79,15 @@ export class ProjectLoadToolsService {
         - For best results, describe the scene concretely rather than abstract concepts
         - Match the image style to the platform (professional for LinkedIn, vibrant for Instagram, etc.)
 
+      WEB SEARCH:
+        - You can search the web for real-time information using the webSearch tool
+        - Use webSearch to research topics related to the project before creating posts
+        - This is especially useful for: current trends, industry news, competitor analysis, audience insights, and fact-checking
+        - When the user asks you to research something or create posts about current events, ALWAYS use webSearch first
+        - Combine web search results with your knowledge to create more informed, timely, and relevant post content
+        - Include relevant sources in your notes when web search informed the content
+        - If the user asks about a specific company, product, or event, search for the latest information first
+
       When the user asks for post suggestions:
         1. First understand their goals, target audience, and tone
         2. Propose 2-3 ideas with platform recommendations
