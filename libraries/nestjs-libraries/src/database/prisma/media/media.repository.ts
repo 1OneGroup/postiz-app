@@ -37,6 +37,19 @@ export class MediaRepository {
     });
   }
 
+  findByPath(path: string) {
+    return this._media.model.media.findFirst({
+      where: {
+        path,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        path: true,
+      },
+    });
+  }
+
   deleteMedia(org: string, id: string) {
     return this._media.model.media.update({
       where: {

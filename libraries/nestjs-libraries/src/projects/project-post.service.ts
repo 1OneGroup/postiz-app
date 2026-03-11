@@ -4,12 +4,14 @@ import { CreateProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/cre
 import { UpdateProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/update-project-post.dto';
 import { ScheduleProjectPostDto } from '@gitroom/nestjs-libraries/projects/dto/schedule-project-post.dto';
 import { PostsService } from '@gitroom/nestjs-libraries/database/prisma/posts/posts.service';
+import { MediaService } from '@gitroom/nestjs-libraries/database/prisma/media/media.service';
 
 @Injectable()
 export class ProjectPostService {
   constructor(
     private _repository: ProjectPostRepository,
-    private _postsService: PostsService
+    private _postsService: PostsService,
+    private _mediaService: MediaService
   ) {}
 
   create(orgId: string, projectId: string, data: CreateProjectPostDto) {
@@ -49,6 +51,14 @@ export class ProjectPostService {
       throw new BadRequestException('Only approved posts can be scheduled');
     }
 
+    const images: { path: string; id: string }[] = [];
+    if (projectPost.image) {
+      const media = await this._mediaService.findByPath(projectPost.image);
+      if (media) {
+        images.push({ path: media.path, id: media.id });
+      }
+    }
+
     const rawBody = {
       type: 'schedule' as const,
       date: dto.date,
@@ -60,7 +70,7 @@ export class ProjectPostService {
           value: [
             {
               content: projectPost.content,
-              image: [] as { path: string; id: string }[],
+              image: images,
             },
           ],
           settings: {},

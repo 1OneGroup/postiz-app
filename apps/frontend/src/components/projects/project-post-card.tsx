@@ -14,6 +14,7 @@ export interface ProjectPostData {
   suggestedPlatform: string | null;
   suggestedDate: string | null;
   title: string | null;
+  image: string | null;
   status: string;
   aiGenerated: boolean;
   notes: string | null;
@@ -172,6 +173,14 @@ export const ProjectPostCard: FC<{
 
       {post.title && (
         <h4 className="text-[14px] font-[500]">{post.title}</h4>
+      )}
+
+      {post.image && (
+        <img
+          src={post.image}
+          alt={post.title || 'Post image'}
+          className="w-full rounded-[8px] object-cover max-h-[200px]"
+        />
       )}
 
       <p className="text-[13px] text-newTextColor/70 line-clamp-4">
