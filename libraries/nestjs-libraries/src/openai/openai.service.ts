@@ -40,8 +40,8 @@ export class OpenaiService {
       fieldname: '',
       destination: '',
       stream: new Readable(),
-      filename: '',
-      originalname: '',
+      filename: 'image.png',
+      originalname: 'image.png',
       encoding: '',
     });
     return path.indexOf('http') === -1
