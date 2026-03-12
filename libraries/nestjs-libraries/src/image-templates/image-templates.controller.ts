@@ -34,6 +34,14 @@ export class ImageTemplatesController {
     return this._imageTemplatesService.findAll(org.id);
   }
 
+  @Post('/seed/:projectTag')
+  seedDefaults(
+    @GetOrgFromRequest() org: Organization,
+    @Param('projectTag') projectTag: string
+  ) {
+    return this._imageTemplatesService.seedDefaultTemplates(org.id, projectTag);
+  }
+
   @Get('/by-project/:projectTag')
   findByProjectTag(
     @GetOrgFromRequest() org: Organization,

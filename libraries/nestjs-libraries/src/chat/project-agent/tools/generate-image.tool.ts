@@ -35,9 +35,32 @@ export class GenerateImageTool implements AgentToolInterface {
       execute: async (args) => {
         const { context, runtimeContext } = args;
         // @ts-ignore
-        const orgId = JSON.parse(runtimeContext.get('organization') as string).id;
+        const org = JSON.parse(runtimeContext.get('organization') as string);
+        const orgId = org.id;
         const projectName: string = runtimeContext.get('projectName' as never) || 'AI';
 
+        // Try branded generation using projectName as projectTag
+        const brandedUrl = await this._mediaService.generateBrandedImage(
+          context.description,
+          org,
+          projectName
+        );
+
+        if (brandedUrl) {
+          const fileName = `ai-${projectName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png`;
+          const originalName = `[${projectName}] ${context.description.substring(0, 80)}`;
+          const media = await this._mediaService.saveFile(orgId, fileName, brandedUrl as string, originalName);
+
+          return {
+            output: {
+              imageUrl: brandedUrl as string,
+              mediaId: media.id,
+              message: `Branded image generated and saved to Media library as "${originalName}". Use the imageUrl when calling createSamplePost or updateSamplePost.`,
+            },
+          };
+        }
+
+        // Fallback: standard generation without brand context
         const enhancedPrompt =
           await this._openaiService.generatePromptForPicture(context.description);
         const imageUrl = await this._openaiService.generateImage(
@@ -45,7 +68,6 @@ export class GenerateImageTool implements AgentToolInterface {
           true
         );
 
-        // Save to Media library with project name label
         const fileName = `ai-${projectName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.png`;
         const originalName = `[${projectName}] ${context.description.substring(0, 80)}`;
         const media = await this._mediaService.saveFile(orgId, fileName, imageUrl, originalName);

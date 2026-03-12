@@ -52,6 +52,105 @@ export class OpenaiService {
       : path;
   }
 
+  async generateBrandedImage(opts: {
+    prompt: string;
+    brandContext: string;
+    visualRules: Record<string, any>;
+    promptSkeleton: string;
+    referenceImages: Array<{ mimeType: string; base64: string }>;
+    aspectRatio?: string;
+  }): Promise<string> {
+    // Step 1: Craft branded prompt
+    const refLabels = opts.referenceImages.map((_, i) => {
+      if (i === 0) return `Image ${i + 1} is the brand logo — reproduce it EXACTLY in the top-left corner.`;
+      return `Image ${i + 1} is a project/style reference — use for visual consistency.`;
+    });
+
+    const craftResult = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `You are an expert social media graphic designer. Craft a detailed image generation prompt under 600 words for a branded social media creative.
+
+Include these elements in your prompt:
+1. BACKGROUND SCENE based on user request
+2. BRAND LOGO in top-left corner (from reference image 1)
+3. BOLD HEADLINE at bottom (serif/display font, gold/cream/white)
+4. SUBTITLE below headline (lighter weight)
+5. COMPLIANCE TEXT top-right (RERA number if in brand context)
+6. Square 1:1 format
+
+REFERENCE IMAGES:
+${refLabels.join('\n')}
+
+TEMPLATE SKELETON:
+${opts.promptSkeleton}
+
+VISUAL RULES:
+${JSON.stringify(opts.visualRules, null, 2)}
+
+BRAND CONTEXT:
+${opts.brandContext}
+
+USER REQUEST: ${opts.prompt}`,
+      config: {
+        responseMimeType: 'application/json',
+        responseJsonSchema: zodToJsonSchema(PicturePrompt) as any,
+      },
+    });
+
+    let craftedPrompt = opts.prompt;
+    try {
+      craftedPrompt = JSON.parse(craftResult.text || '{}').prompt || opts.prompt;
+    } catch {
+      craftedPrompt = opts.prompt;
+    }
+
+    // Step 2: Generate with Nano Banana Pro
+    const contentParts: any[] = [
+      { text: craftedPrompt },
+      ...opts.referenceImages.map((img) => ({
+        inlineData: { mimeType: img.mimeType, data: img.base64 },
+      })),
+    ];
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-3-pro-image-preview',
+      contents: [{ role: 'user', parts: contentParts }],
+      config: {
+        responseModalities: ['IMAGE', 'TEXT'],
+        imageConfig: {
+          aspectRatio: (opts.aspectRatio || '1:1') as any,
+          imageSize: '2K' as any,
+        },
+      },
+    });
+
+    const part = result.candidates?.[0]?.content?.parts?.find(
+      (p: any) => p.inlineData
+    );
+    if (!part?.inlineData) throw new Error('Branded image generation failed');
+
+    const buffer = Buffer.from(part.inlineData.data!, 'base64');
+    const { path } = await this.storage.uploadFile({
+      buffer,
+      mimetype: 'image/png',
+      size: buffer.length,
+      path: '',
+      fieldname: '',
+      destination: '',
+      stream: new Readable(),
+      filename: 'branded-image.png',
+      originalname: 'branded-image.png',
+      encoding: '',
+    });
+
+    return path.indexOf('http') === -1
+      ? process.env.FRONTEND_URL +
+          '/' +
+          process.env.NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY +
+          path
+      : path;
+  }
+
   async generatePromptForPicture(prompt: string) {
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',

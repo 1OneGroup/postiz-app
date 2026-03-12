@@ -4,9 +4,14 @@ import {
   CreateBrandContextDto,
   UpdateBrandContextDto,
 } from '@gitroom/nestjs-libraries/brand-context/dto/brand-context.dto';
-import { GoogleDriveService } from '@gitroom/nestjs-libraries/google-drive/google-drive.service';
+import {
+  GoogleDriveService,
+  DriveImage,
+} from '@gitroom/nestjs-libraries/google-drive/google-drive.service';
 
-interface EnrichedContext {
+export { DriveImage };
+
+export interface EnrichedContext {
   type: string;
   name: string;
   content: string;
@@ -135,6 +140,58 @@ export class BrandContextService {
     }
 
     return enriched;
+  }
+
+  async getProjectAssetImages(
+    orgId: string,
+    projectTag: string
+  ): Promise<DriveImage[]> {
+    if (!this._googleDriveService.isConfigured()) return [];
+
+    try {
+      const brandContexts = await this._repository.findByProjectTag(
+        orgId,
+        projectTag
+      );
+      const allOrgContexts = await this._repository.findActiveByOrg(orgId);
+
+      // Combine project-specific + org-level contexts that have Drive folders
+      const contextsWithDrive = [
+        ...brandContexts,
+        ...allOrgContexts.filter(
+          (c) => !c.projectTag || c.projectTag === projectTag
+        ),
+      ]
+        .filter(
+          (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i // deduplicate
+        )
+        .filter((c) => c.googleDriveFolderId);
+
+      if (contextsWithDrive.length === 0) return [];
+
+      const allImages: DriveImage[] = [];
+      const seenNames = new Set<string>();
+
+      for (const ctx of contextsWithDrive) {
+        const images = await this._googleDriveService.getImagesFromDriveFolder(
+          ctx.googleDriveFolderId!
+        );
+        for (const img of images) {
+          if (!seenNames.has(img.name)) {
+            seenNames.add(img.name);
+            allImages.push(img);
+          }
+        }
+        if (allImages.length >= 5) break;
+      }
+
+      return allImages.slice(0, 5);
+    } catch (err: any) {
+      this._logger.warn(
+        `Failed to fetch project asset images for ${projectTag}: ${err.message}`
+      );
+      return [];
+    }
   }
 
   async testDriveConnection(folderUrl: string) {

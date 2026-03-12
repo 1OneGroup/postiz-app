@@ -9,6 +9,23 @@ interface DriveFile {
   size?: string;
 }
 
+export interface DriveImage {
+  name: string;
+  mimeType: string;
+  base64: string;
+  fileId: string;
+}
+
+const IMAGE_MIME_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+];
+
+const MAX_DRIVE_IMAGES = 5;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB per image
+
 const SUPPORTED_MIME_TYPES = [
   'application/vnd.google-apps.document',
   'text/plain',
@@ -202,6 +219,64 @@ export class GoogleDriveService {
         `Failed to fetch Drive folder ${folderId}: ${err.message}`
       );
       return '';
+    }
+  }
+
+  async getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]> {
+    if (!this._drive || !folderId) return [];
+
+    try {
+      const response = await this._drive.files.list({
+        q: `'${folderId}' in parents and trashed = false`,
+        fields: 'files(id, name, mimeType, size, modifiedTime)',
+        pageSize: 50,
+        orderBy: 'modifiedTime desc',
+      });
+
+      const files = (response.data.files || []).filter((f) => {
+        if (!f.mimeType || !IMAGE_MIME_TYPES.includes(f.mimeType)) return false;
+        const size = f.size ? parseInt(f.size, 10) : 0;
+        if (size > MAX_IMAGE_SIZE) {
+          this._logger.warn(
+            `Skipping large image: ${f.name} (${size} bytes)`
+          );
+          return false;
+        }
+        return true;
+      });
+
+      const images: DriveImage[] = [];
+
+      for (const file of files.slice(0, MAX_DRIVE_IMAGES)) {
+        try {
+          const imgResponse = await this._drive.files.get(
+            { fileId: file.id!, alt: 'media' },
+            { responseType: 'arraybuffer' }
+          );
+
+          const buffer = Buffer.from(imgResponse.data as ArrayBuffer);
+          images.push({
+            name: file.name || 'unknown',
+            mimeType: file.mimeType!,
+            base64: buffer.toString('base64'),
+            fileId: file.id!,
+          });
+        } catch (imgErr: any) {
+          this._logger.warn(
+            `Failed to download image ${file.name}: ${imgErr.message}`
+          );
+        }
+      }
+
+      this._logger.log(
+        `Fetched ${images.length} images from Drive folder ${folderId}`
+      );
+      return images;
+    } catch (err: any) {
+      this._logger.error(
+        `Failed to fetch images from folder ${folderId}: ${err.message}`
+      );
+      return [];
     }
   }
 }

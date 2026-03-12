@@ -54,6 +54,7 @@ interface WorkflowChannelsState {
   }[];
   isPicture?: boolean;
   popularPosts?: { content: string; hook: string }[];
+  projectTag?: string;
 }
 
 const category = z.object({
@@ -131,6 +132,7 @@ export class AgentGraphService {
         popularPosts: null,
         topic: null,
         isPicture: null,
+        projectTag: null,
       },
     });
 
@@ -321,9 +323,22 @@ export class AgentGraphService {
       return {};
     }
 
-    const geminiAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
     const newContent = await Promise.all(
       (state.content || []).map(async (p) => {
+        // Use branded generation when projectTag is available
+        if (state.projectTag) {
+          const imageUrl = await this._mediaService.generateBrandedImage(
+            p.prompt!,
+            { id: state.orgId } as any,
+            state.projectTag
+          );
+          if (imageUrl) {
+            return { ...p, image: imageUrl as string };
+          }
+        }
+
+        // Fallback: standard generation without brand context
+        const geminiAi = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
         const result = await geminiAi.models.generateContent({
           model: 'gemini-2.5-flash-image',
           contents: [{ text: p.prompt! }],
@@ -424,6 +439,7 @@ export class AgentGraphService {
         format: body.format,
         tone: body.tone,
         orgId,
+        projectTag: body.projectTag,
       },
       {
         streamMode: 'values',

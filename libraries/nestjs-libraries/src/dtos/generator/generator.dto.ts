@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class GeneratorDto {
   @IsString()
@@ -15,4 +15,8 @@ export class GeneratorDto {
   @IsString()
   @IsIn(['personal', 'company'])
   tone: 'personal' | 'company';
+
+  @IsString()
+  @IsOptional()
+  projectTag?: string;
 }

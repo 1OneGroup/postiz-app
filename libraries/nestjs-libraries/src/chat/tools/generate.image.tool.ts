@@ -22,6 +22,7 @@ export class GenerateImageTool implements AgentToolInterface {
       `,
       inputSchema: z.object({
         prompt: z.string(),
+        projectTag: z.string().optional().describe('Optional project tag for branded image generation'),
       }),
       outputSchema: z.object({
         id: z.string(),
@@ -32,6 +33,21 @@ export class GenerateImageTool implements AgentToolInterface {
         checkAuth(args, options);
         // @ts-ignore
         const org = JSON.parse(runtimeContext.get('organization') as string);
+
+        // Use branded generation when projectTag is provided
+        if (context.projectTag) {
+          const imageUrl = await this._mediaService.generateBrandedImage(
+            context.prompt,
+            org,
+            context.projectTag
+          );
+          if (imageUrl) {
+            const fileName = (imageUrl as string).split('/').pop() || 'branded-image.png';
+            return this._mediaService.saveFile(org.id, fileName, imageUrl as string);
+          }
+        }
+
+        // Fallback: standard generation
         const image = await this._mediaService.generateImage(
           context.prompt,
           org

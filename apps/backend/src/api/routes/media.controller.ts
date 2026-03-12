@@ -84,6 +84,32 @@ export class MediaController {
     return this._mediaService.saveFile(org.id, file.split('/').pop(), file);
   }
 
+  @Post('/generate-branded-image')
+  async generateBrandedImage(
+    @GetOrgFromRequest() org: Organization,
+    @Body('prompt') prompt: string,
+    @Body('projectTag') projectTag?: string
+  ) {
+    const total = await this._subscriptionService.checkCredits(org);
+    if (process.env.STRIPE_PUBLISHABLE_KEY && total.credits <= 0) {
+      return false;
+    }
+
+    const imageUrl = await this._mediaService.generateBrandedImage(
+      prompt,
+      org,
+      projectTag
+    );
+
+    if (!imageUrl) {
+      return false;
+    }
+
+    // Save to media library
+    const fileName = (imageUrl as string).split('/').pop() || 'branded-image.png';
+    return this._mediaService.saveFile(org.id, fileName, imageUrl as string);
+  }
+
   @Post('/upload-server')
   @UseInterceptors(FileInterceptor('file'))
   @UsePipes(new CustomFileValidationPipe())
