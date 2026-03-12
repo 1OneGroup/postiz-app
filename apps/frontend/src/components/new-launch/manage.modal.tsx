@@ -413,15 +413,32 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
       }
 
       if (!dummy) {
-        addEditSets
-          ? addEditSets(data)
-          : await fetch('/posts', {
-              method: 'POST',
-              body: JSON.stringify(data),
-            });
+        if (addEditSets) {
+          addEditSets(data);
+        } else {
+          const response = await fetch('/posts', {
+            method: 'POST',
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            let errorMessage = t('failed_to_save_post', 'Failed to save post. Please try again.');
+            try {
+              const errorData = await response.json();
+              if (errorData?.message) {
+                errorMessage = Array.isArray(errorData.message)
+                  ? errorData.message.join(', ')
+                  : errorData.message;
+              }
+            } catch {}
+            toaster.show(errorMessage, 'warning');
+            setLoading(false);
+            return;
+          }
+        }
 
         if (!addEditSets) {
-          mutate();
+          await mutate();
           toaster.show(
             !existingData.integration
               ? t('added_successfully', 'Added successfully')

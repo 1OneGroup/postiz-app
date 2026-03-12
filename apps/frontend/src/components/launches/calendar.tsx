@@ -589,7 +589,7 @@ export const CalendarColumn: FC<{
           : display === 'week'
           ? pList.isSameOrAfter(getDate.startOf('hour')) &&
             pList.isBefore(getDate.endOf('hour'))
-          : pList.format('DD/MM/YYYY') === getDate.format('DD/MM/YYYY');
+          : pList.isSame(getDate, 'day');
       return check;
     });
   }, [posts, display, getDate]);

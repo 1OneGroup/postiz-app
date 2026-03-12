@@ -313,9 +313,8 @@ export const CalendarWeekProvider: FC<{
   }, [posts]);
 
   // Combined reload function that handles both calendar and list views
-  const reloadCalendarView = useCallback(() => {
-    mutateCalendar();
-    mutateList();
+  const reloadCalendarView = useCallback(async () => {
+    await Promise.all([mutateCalendar(), mutateList()]);
   }, [mutateCalendar, mutateList]);
 
   // Determine loading state based on current view

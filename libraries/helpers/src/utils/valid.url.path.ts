@@ -7,13 +7,18 @@ import {
 @ValidatorConstraint({ name: 'checkValidExtension', async: false })
 export class ValidUrlExtension implements ValidatorConstraintInterface {
   validate(text: string, args: ValidationArguments) {
+    const path = text?.split?.('?')?.[0] || '';
+    // Allow internal upload URLs (may not have file extensions)
+    if (path.includes('/uploads/')) {
+      return true;
+    }
     return (
-      !!text?.split?.('?')?.[0].endsWith('.png') ||
-      !!text?.split?.('?')?.[0].endsWith('.jpg') ||
-      !!text?.split?.('?')?.[0].endsWith('.jpeg') ||
-      !!text?.split?.('?')?.[0].endsWith('.gif') ||
-      !!text?.split?.('?')?.[0].endsWith('.webp') ||
-      !!text?.split?.('?')?.[0].endsWith('.mp4')
+      !!path.endsWith('.png') ||
+      !!path.endsWith('.jpg') ||
+      !!path.endsWith('.jpeg') ||
+      !!path.endsWith('.gif') ||
+      !!path.endsWith('.webp') ||
+      !!path.endsWith('.mp4')
     );
   }
 

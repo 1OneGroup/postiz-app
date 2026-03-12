@@ -249,10 +249,20 @@ export class PostsService {
             );
           }
 
+          // Build provider-specific defaults for required settings fields
+          const providerDefaults: Record<string, any> = {};
+          if (
+            integration.providerIdentifier.startsWith('instagram') &&
+            !post.settings?.post_type
+          ) {
+            providerDefaults.post_type = 'post';
+          }
+
           return {
             type: replaceDraft ? 'schedule' : body.type,
             ...post,
             settings: {
+              ...providerDefaults,
               ...(post.settings || ({} as any)),
               __type: integration.providerIdentifier,
             },
