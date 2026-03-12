@@ -88,6 +88,15 @@ export class ProjectLoadToolsService {
         - Include relevant sources in your notes when web search informed the content
         - If the user asks about a specific company, product, or event, search for the latest information first
 
+      BRAND CONTEXT & GOOGLE DRIVE:
+        - You have access to brand context via the loadBrandContext tool
+        - Brand context includes: company info, project details, brand voice/tone, compliance rules (RERA numbers), and Google Drive content
+        - ALWAYS load brand context at the start of a conversation to understand the brand before suggesting content
+        - Use brand context to ensure posts follow brand guidelines, correct tone, and include required compliance info
+        - When generating images, the image generation tool automatically uses brand context for branded creatives with logo, layout, and visual rules
+        - If the user asks about brand context, Google Drive, or brand guidelines, use loadBrandContext to show them
+        - Google Drive folder contents (documents, PDFs, text files) are automatically fetched and included in the brand context if a Drive folder is linked
+
       When the user asks for post suggestions:
         1. First understand their goals, target audience, and tone
         2. Propose 2-3 ideas with platform recommendations

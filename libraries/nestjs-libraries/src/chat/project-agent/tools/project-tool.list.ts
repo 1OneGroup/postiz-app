@@ -4,6 +4,7 @@ import { ListSamplePostsTool } from '@gitroom/nestjs-libraries/chat/project-agen
 import { UpdateSamplePostTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/update-sample-post.tool';
 import { GenerateImageTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/generate-image.tool';
 import { WebSearchTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/web-search.tool';
+import { BrandContextTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/brand-context.tool';
 
 export const projectToolList = [
   ProjectContextTool,
@@ -12,4 +13,5 @@ export const projectToolList = [
   UpdateSamplePostTool,
   GenerateImageTool,
   WebSearchTool,
+  BrandContextTool,
 ];
