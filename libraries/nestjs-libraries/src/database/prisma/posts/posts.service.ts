@@ -253,7 +253,7 @@ export class PostsService {
           const providerDefaults: Record<string, any> = {};
           if (
             integration.providerIdentifier.startsWith('instagram') &&
-            !post.settings?.post_type
+            !(post.settings as any)?.post_type
           ) {
             providerDefaults.post_type = 'post';
           }
