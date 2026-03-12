@@ -70,13 +70,12 @@ export class NanoBananaBrand extends VideoAbstract<NanoBananaBrandParams> {
       throw new Error('Template not found');
     }
 
-    // 2. Fetch brand context for project, sorted by priority descending
-    const brandContexts = await this._brandContextService.findByProjectTag(
+    // 2. Fetch enriched brand context (with Google Drive content if linked)
+    const enrichedContexts = await this._brandContextService.getEnrichedContextsForProject(
       organizationId,
       projectTag
     );
-    const brandContextString = brandContexts
-      .sort((a, b) => b.priority - a.priority)
+    const brandContextString = enrichedContexts
       .map((c) => `[${c.type.toUpperCase()}: ${c.name}]\n${c.content}`)
       .join('\n\n');
 

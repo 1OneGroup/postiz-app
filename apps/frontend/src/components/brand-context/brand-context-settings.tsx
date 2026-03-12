@@ -26,6 +26,7 @@ interface BrandContext {
   content: string;
   projectTag?: string;
   location?: string;
+  googleDriveFolderId?: string;
   priority: number;
   isActive: boolean;
 }
@@ -170,6 +171,7 @@ const brandContextSchema = object().shape({
   location: string().optional().default(''),
   priority: number().min(0).required().default(0),
   isActive: boolean().required().default(true),
+  googleDriveFolderId: string().optional().default(''),
 });
 
 // ─── BrandContextFormModal ────────────────────────────────────────────────────
@@ -193,6 +195,7 @@ const BrandContextFormModal: React.FC<{
       location: data?.location ?? '',
       priority: data?.priority ?? 0,
       isActive: data?.isActive ?? true,
+      googleDriveFolderId: data?.googleDriveFolderId ?? '',
     },
   });
 
@@ -204,6 +207,7 @@ const BrandContextFormModal: React.FC<{
         ...values,
         projectTag: values.projectTag || undefined,
         location: values.location || undefined,
+        googleDriveFolderId: values.googleDriveFolderId || undefined,
       };
       try {
         if (data?.id) {
@@ -311,6 +315,24 @@ const BrandContextFormModal: React.FC<{
             type="number"
           />
 
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-[12px] text-customColor18">
+              {t('brand_context_google_drive', 'Google Drive Folder URL')}
+            </label>
+            <input
+              {...form.register('googleDriveFolderId')}
+              type="text"
+              placeholder="https://drive.google.com/drive/folders/..."
+              className="bg-input border border-fifth rounded-[4px] px-[12px] py-[8px] text-[14px] outline-none w-full"
+            />
+            <div className="text-[11px] text-customColor18">
+              {t(
+                'brand_context_drive_help',
+                'Optional. Share the folder with your service account email for access.'
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <div className="text-[14px]">
@@ -393,7 +415,7 @@ const BrandContextCard: React.FC<{
       </div>
 
       {/* Metadata chips */}
-      {(item.projectTag || item.location) && (
+      {(item.projectTag || item.location || item.googleDriveFolderId) && (
         <div className="flex flex-wrap gap-[8px]">
           {item.projectTag && (
             <span className="text-[11px] px-[8px] py-[2px] rounded-[4px] bg-fifth/50 text-customColor18">
@@ -403,6 +425,16 @@ const BrandContextCard: React.FC<{
           {item.location && (
             <span className="text-[11px] px-[8px] py-[2px] rounded-[4px] bg-fifth/50 text-customColor18">
               {t('brand_context_location_label', 'Location')}: {item.location}
+            </span>
+          )}
+          {item.googleDriveFolderId && (
+            <span className="text-[11px] px-[8px] py-[2px] rounded-[4px] flex items-center gap-[4px]" style={{ backgroundColor: 'rgba(66, 133, 244, 0.1)', color: '#4285f4' }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 10L4.5 5.5L7.5 10.5H2.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+                <path d="M4.5 5.5L7 1L10 5.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+                <path d="M7.5 10.5L10 5.5H4.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
+              </svg>
+              {t('brand_context_drive_linked', 'Drive Linked')}
             </span>
           )}
         </div>

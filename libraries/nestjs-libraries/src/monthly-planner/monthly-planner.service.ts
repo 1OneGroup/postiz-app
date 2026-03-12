@@ -21,21 +21,11 @@ export class MonthlyPlannerService {
     const config = await this._plannerConfigRepository.findByProjectTag(orgId, dto.projectTag);
     const postsPerWeek = dto.postsPerWeek || config?.postsPerWeek || 3;
 
-    // 2. Fetch active BrandContext blocks for this project
-    const brandContexts = await this._brandContextService.findByProjectTag(orgId, dto.projectTag);
-    const allOrgContexts = await this._brandContextService.findActiveByOrg(orgId);
-
-    // Combine project-specific + org-level contexts
-    const relevantContexts = [
-      ...brandContexts,
-      ...allOrgContexts.filter(c => !c.projectTag || c.projectTag === dto.projectTag),
-    ];
-
-    // Remove duplicates by id
-    const uniqueContexts = [...new Map(relevantContexts.map(c => [c.id, c])).values()];
+    // 2. Fetch enriched BrandContext blocks (with Google Drive content if linked)
+    const enrichedContexts = await this._brandContextService.getEnrichedContextsForProject(orgId, dto.projectTag);
 
     // 3. Get location from brand context
-    const locationContext = uniqueContexts.find(c => c.location);
+    const locationContext = enrichedContexts.find(c => c.location);
     const location = locationContext?.location || 'India';
 
     // 4. Calculate total posts
@@ -45,8 +35,7 @@ export class MonthlyPlannerService {
     const totalPosts = postsPerWeek * weeksInMonth;
 
     // 5. Build the brand context string
-    const brandContextString = uniqueContexts
-      .sort((a, b) => b.priority - a.priority)
+    const brandContextString = enrichedContexts
       .map(c => `[${c.type.toUpperCase()}: ${c.name}]\n${c.content}`)
       .join('\n\n---\n\n');
 

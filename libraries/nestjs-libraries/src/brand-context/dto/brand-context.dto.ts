@@ -39,6 +39,10 @@ export class CreateBrandContextDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  @IsOptional()
+  @IsString()
+  googleDriveFolderId?: string;
 }
 
 export class UpdateBrandContextDto {
@@ -69,4 +73,8 @@ export class UpdateBrandContextDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  @IsOptional()
+  @IsString()
+  googleDriveFolderId?: string;
 }

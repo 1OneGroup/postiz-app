@@ -24,6 +24,7 @@ export class BrandContextRepository {
         priority: data.priority,
         projectTag: data.projectTag,
         location: data.location,
+        googleDriveFolderId: data.googleDriveFolderId,
       },
     });
   }

@@ -75,6 +75,14 @@ export class BrandContextController {
     return this._service.update(org.id, id, dto);
   }
 
+  @Post('/test-drive')
+  async testDriveConnection(
+    @GetOrgFromRequest() org: Organization,
+    @Body() body: { folderUrl: string }
+  ) {
+    return this._service.testDriveConnection(body.folderUrl);
+  }
+
   @Delete('/:id')
   remove(
     @GetOrgFromRequest() org: Organization,

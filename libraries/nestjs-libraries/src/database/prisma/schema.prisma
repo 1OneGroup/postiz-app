@@ -969,9 +969,10 @@ model BrandContext {
   content        String           @db.Text
   isActive       Boolean          @default(true)
   priority       Int              @default(0)
-  projectTag     String?
-  location       String?
-  createdAt      DateTime         @default(now())
+  projectTag          String?
+  location            String?
+  googleDriveFolderId String?
+  createdAt           DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   deletedAt      DateTime?
   organization   Organization     @relation(fields: [organizationId], references: [id])
