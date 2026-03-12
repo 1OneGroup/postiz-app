@@ -185,6 +185,54 @@ export class GoogleDriveService {
     }
   }
 
+  async listFolderContents(
+    folderId: string
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      mimeType: string;
+      size?: string;
+      isFolder: boolean;
+    }>
+  > {
+    if (!this._drive) return [];
+
+    try {
+      const response = await this._drive.files.list({
+        q: `'${folderId}' in parents and trashed = false`,
+        fields: 'files(id, name, mimeType, size)',
+        pageSize: 100,
+        orderBy: 'folder,name',
+      });
+
+      return (response.data.files || [])
+        .filter((f) => {
+          // Skip oversized files (Google Docs/folders have no size field)
+          const size = f.size ? parseInt(f.size, 10) : 0;
+          if (size > MAX_FILE_SIZE) {
+            this._logger.warn(
+              `Skipping large file: ${f.name} (${size} bytes)`
+            );
+            return false;
+          }
+          return true;
+        })
+        .map((f) => ({
+          id: f.id!,
+          name: f.name || 'unknown',
+          mimeType: f.mimeType || 'application/octet-stream',
+          size: f.size || undefined,
+          isFolder: f.mimeType === 'application/vnd.google-apps.folder',
+        }));
+    } catch (err: any) {
+      this._logger.error(
+        `Failed to list folder contents ${folderId}: ${err.message}`
+      );
+      return [];
+    }
+  }
+
   async getTextFromDriveFolder(folderId: string): Promise<string> {
     if (!this._drive || !folderId) return '';
 

@@ -94,8 +94,13 @@ export class ProjectLoadToolsService {
         - ALWAYS load brand context at the start of a conversation to understand the brand before suggesting content
         - Use brand context to ensure posts follow brand guidelines, correct tone, and include required compliance info
         - When generating images, the image generation tool automatically uses brand context for branded creatives with logo, layout, and visual rules
-        - If the user asks about brand context, Google Drive, or brand guidelines, use loadBrandContext to show them
-        - Google Drive folder contents (documents, PDFs, text files) are automatically fetched and included in the brand context if a Drive folder is linked
+        - You can browse Google Drive folders using the browseDrive tool — it lists all files AND subfolders
+        - You can read specific file contents using the readDriveFile tool — pass the fileId, fileName, and mimeType from browseDrive results
+        - Use browseDrive without a folderId to see root project folders, or pass a folderId to navigate into a subfolder
+        - Navigate subfolders by calling browseDrive with the subfolder's ID from the previous listing
+        - When the user asks about Google Drive, files, documents, or brand assets, use browseDrive to explore
+        - For images in Drive, browseDrive will list them — use this info when creating posts or generating branded images
+        - If the user asks to read a document, use readDriveFile with the file details from browseDrive
 
       When the user asks for post suggestions:
         1. First understand their goals, target audience, and tone

@@ -5,6 +5,8 @@ import { UpdateSamplePostTool } from '@gitroom/nestjs-libraries/chat/project-age
 import { GenerateImageTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/generate-image.tool';
 import { WebSearchTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/web-search.tool';
 import { BrandContextTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/brand-context.tool';
+import { BrowseDriveTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/browse-drive.tool';
+import { ReadDriveFileTool } from '@gitroom/nestjs-libraries/chat/project-agent/tools/read-drive-file.tool';
 
 export const projectToolList = [
   ProjectContextTool,
@@ -14,4 +16,6 @@ export const projectToolList = [
   GenerateImageTool,
   WebSearchTool,
   BrandContextTool,
+  BrowseDriveTool,
+  ReadDriveFileTool,
 ];

@@ -194,6 +194,34 @@ export class BrandContextService {
     }
   }
 
+  async getDriveFolderIds(
+    orgId: string,
+    projectTag: string
+  ): Promise<Array<{ name: string; folderId: string }>> {
+    const brandContexts = await this._repository.findByProjectTag(
+      orgId,
+      projectTag
+    );
+    const allOrgContexts = await this._repository.findActiveByOrg(orgId);
+
+    const relevantContexts = [
+      ...brandContexts,
+      ...allOrgContexts.filter(
+        (c) => !c.projectTag || c.projectTag === projectTag
+      ),
+    ];
+
+    // Deduplicate by id, filter to those with Drive folders
+    const uniqueWithDrive = [
+      ...new Map(relevantContexts.map((c) => [c.id, c])).values(),
+    ].filter((c) => c.googleDriveFolderId);
+
+    return uniqueWithDrive.map((c) => ({
+      name: c.name,
+      folderId: c.googleDriveFolderId!,
+    }));
+  }
+
   async testDriveConnection(folderUrl: string) {
     if (!this._googleDriveService.isConfigured()) {
       return {
