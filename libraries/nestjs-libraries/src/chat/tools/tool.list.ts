@@ -6,6 +6,10 @@ import { VideoFunctionTool } from '@gitroom/nestjs-libraries/chat/tools/video.fu
 import { GenerateVideoTool } from '@gitroom/nestjs-libraries/chat/tools/generate.video.tool';
 import { GenerateImageTool } from '@gitroom/nestjs-libraries/chat/tools/generate.image.tool';
 import { IntegrationListTool } from '@gitroom/nestjs-libraries/chat/tools/integration.list.tool';
+import { ListAllProjectsTool } from '@gitroom/nestjs-libraries/chat/tools/list.all.projects.tool';
+import { WebSearchTool } from '@gitroom/nestjs-libraries/chat/tools/web.search.tool';
+import { BrandContextTool } from '@gitroom/nestjs-libraries/chat/tools/brand.context.tool';
+import { CreateCalendarPostTool } from '@gitroom/nestjs-libraries/chat/tools/create.calendar.post.tool';
 
 export const toolList = [
   IntegrationListTool,
@@ -16,4 +20,8 @@ export const toolList = [
   VideoFunctionTool,
   GenerateVideoTool,
   GenerateImageTool,
+  ListAllProjectsTool,
+  WebSearchTool,
+  BrandContextTool,
+  CreateCalendarPostTool,
 ];

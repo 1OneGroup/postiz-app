@@ -60,6 +60,23 @@ export const MediaPortal: FC<{
   );
 };
 
+const useAgentProjects = () => {
+  const fetch = useFetch();
+  const loadProjects = useCallback(async () => {
+    return (await fetch('/projects')).json();
+  }, []);
+
+  return useSWR('agent-projects', loadProjects, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
+    revalidateOnMount: true,
+    refreshWhenHidden: false,
+    refreshWhenOffline: false,
+    fallbackData: [],
+  });
+};
+
 export const AgentList: FC<{ onChange: (arr: any[]) => void }> = ({
   onChange,
 }) => {
@@ -82,6 +99,8 @@ export const AgentList: FC<{ onChange: (arr: any[]) => void }> = ({
     refreshWhenOffline: false,
     fallbackData: [],
   });
+
+  const { data: projects } = useAgentProjects();
 
   const setIntegration = useCallback(
     (integration: Integration) => () => {
@@ -191,6 +210,31 @@ export const AgentList: FC<{ onChange: (arr: any[]) => void }> = ({
             </div>
           ))}
         </div>
+        {Array.isArray(projects) && projects.length > 0 && (
+          <div className="mt-[20px]">
+            <h2 className="group-[.sidebar]:hidden flex-1 text-[20px] font-[500] mb-[15px]">
+              {t('projects', 'Projects')}
+            </h2>
+            <div className="flex flex-col gap-[8px]">
+              {projects.map((project: any) => (
+                <div
+                  key={project.id}
+                  className="flex gap-[8px] items-center px-[4px] py-[4px] rounded-[8px]"
+                >
+                  <div
+                    className="w-[12px] h-[12px] rounded-full flex-shrink-0"
+                    style={{
+                      backgroundColor: project.color || '#a855f7',
+                    }}
+                  />
+                  <div className="flex-1 whitespace-nowrap text-ellipsis overflow-hidden text-[14px] group-[.sidebar]:hidden">
+                    {project.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
