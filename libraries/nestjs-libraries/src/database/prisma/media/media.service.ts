@@ -75,7 +75,7 @@ export class MediaService {
       org,
       'ai_images',
       async () => {
-        // 1. Fetch brand context
+        // === Fetch brand context (shared by both V1 and V2 paths) ===
         const enrichedContexts = await this._brandContextService!.getEnrichedContextsForProject(
           org.id,
           projectTag
@@ -84,7 +84,95 @@ export class MediaService {
           .map((c) => `[${c.type.toUpperCase()}: ${c.name}]\n${c.content}`)
           .join('\n\n');
 
-        // 2. Fetch default template for this project (auto-seed if none exist)
+        // === Get Drive folder IDs for this project ===
+        const driveFolderIds = await this._brandContextService!.getDriveFolderIds(
+          org.id,
+          projectTag
+        );
+        const projectRootFolderId = driveFolderIds.length > 0
+          ? driveFolderIds[0].folderId
+          : null;
+
+        // === Try V2 Pipeline (5-step) ===
+        if (projectRootFolderId) {
+          try {
+            this._logger.log(
+              `Starting V2 branded pipeline for project "${projectTag}"`
+            );
+
+            // Step 1: Intent Analysis
+            const availableSubfolders = ['logos', 'brand-guide', 'gallery', 'renders', 'photos', 'brochures', 'floorplans'];
+            const intent = await this._openAi.analyzeIntent(
+              prompt,
+              projectTag,
+              brandContextString,
+              availableSubfolders
+            );
+            this._logger.log(
+              `Intent analysis: type=${intent.contentType}, ratio=${intent.aspectRatio}, assets=[${intent.requiredAssets.join(',')}]`
+            );
+
+            // Step 2: Targeted Asset Fetch
+            const assetBundle = await this._brandContextService!.assembleTargetedAssets(
+              intent,
+              projectRootFolderId
+            );
+
+            // Step 3+4: Prompt Crafting + Image Generation
+            const imageUrl = await this._openAi.generateBrandedImageV2({
+              prompt,
+              intent,
+              assetBundle,
+              brandContext: brandContextString,
+            });
+
+            // Step 5: Validation with retry
+            try {
+              // Download the generated image for validation
+              const resp = await fetch(imageUrl);
+              if (resp.ok) {
+                const buf = await resp.arrayBuffer();
+                const imageBase64 = Buffer.from(buf).toString('base64');
+                const validation = await this._openAi.validateGeneratedImage(
+                  imageBase64,
+                  intent
+                );
+
+                this._logger.log(
+                  `Validation: passed=${validation.passed}, score=${validation.score}, deficiencies=${validation.deficiencies.length}`
+                );
+
+                if (validation.passed) {
+                  return imageUrl;
+                }
+
+                // Retry once with deficiency feedback
+                this._logger.log(
+                  `Retrying with deficiency feedback: ${validation.deficiencies.join('; ')}`
+                );
+                const retryUrl = await this._openAi.generateBrandedImageV2({
+                  prompt: `${prompt}\n\nPREVIOUS ATTEMPT DEFICIENCIES (fix these): ${validation.deficiencies.join('. ')}`,
+                  intent,
+                  assetBundle,
+                  brandContext: brandContextString,
+                });
+                return retryUrl;
+              }
+            } catch (validationErr: any) {
+              this._logger.warn(
+                `Validation step failed, using first attempt: ${validationErr.message}`
+              );
+            }
+
+            return imageUrl;
+          } catch (v2Err: any) {
+            this._logger.warn(
+              `V2 branded pipeline failed, falling back to V1: ${v2Err.message}`
+            );
+          }
+        }
+
+        // === V1 Fallback: Original Pipeline ===
         let template = await this._imageTemplatesService!.findDefault(org.id, projectTag);
         if (!template) {
           await this._imageTemplatesService!.seedDefaultTemplates(org.id, projectTag);
@@ -93,10 +181,9 @@ export class MediaService {
         const visualRules = (template?.visualRules as Record<string, any>) || {};
         const promptSkeleton = template?.promptSkeleton || '';
 
-        // 3. Assemble reference images
         const referenceImages: Array<{ mimeType: string; base64: string }> = [];
 
-        // Source A: Template linked assets (logo + style references)
+        // Source A: Template linked assets
         if (template) {
           const fullTemplate = await this._imageTemplatesService!.getTemplateWithAssetUrls(
             org.id,
@@ -122,7 +209,7 @@ export class MediaService {
           }
         }
 
-        // Source B: Google Drive project asset images
+        // Source B: Drive project assets
         try {
           const driveImages = await this._brandContextService!.getProjectAssetImages(
             org.id,
@@ -139,9 +226,7 @@ export class MediaService {
           // Drive images are optional
         }
 
-        // 4. Generate branded image
         if (referenceImages.length === 0 && !brandContextString) {
-          // No brand data available — fall back to standard generation
           const enhanced = await this._openAi.generatePromptForPicture(prompt);
           return this._openAi.generateImage(enhanced || prompt, true);
         }

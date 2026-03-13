@@ -11,6 +11,13 @@ import {
 
 export { DriveImage };
 
+import type {
+  IntentObject,
+  CategorizedAssetBundle,
+} from '@gitroom/nestjs-libraries/brand-context/branded-pipeline.types';
+
+export type { IntentObject, CategorizedAssetBundle };
+
 export interface EnrichedContext {
   type: string;
   name: string;
@@ -253,5 +260,147 @@ export class BrandContextService {
         error: error.message || 'Failed to access folder.',
       };
     }
+  }
+
+  /**
+   * Step 2: Targeted Asset Fetch.
+   * Given an intent object and a project root Drive folder ID,
+   * fetches categorized assets from the appropriate subfolders.
+   */
+  async assembleTargetedAssets(
+    intent: IntentObject,
+    projectRootFolderId: string
+  ): Promise<CategorizedAssetBundle> {
+    const bundle: CategorizedAssetBundle = {
+      logo: null,
+      styleReferences: [],
+      sceneReferences: [],
+      brandRules: null,
+      parentLogo: null,
+    };
+
+    if (!this._googleDriveService.isConfigured() || !projectRootFolderId) {
+      return bundle;
+    }
+
+    try {
+      // Determine which image subfolders to query
+      const imageSubfolders = intent.requiredAssets.filter(
+        (s) => !['brand-guide', 'brochures'].includes(s)
+      );
+
+      // Fetch images from targeted subfolders (max 2 per subfolder)
+      const imagesBySubfolder =
+        await this._googleDriveService.getImagesFromSubfolders(
+          projectRootFolderId,
+          imageSubfolders,
+          2
+        );
+
+      // Assign logo from logos/ subfolder
+      const logos = imagesBySubfolder.get('logos') || [];
+      if (logos.length > 0) {
+        bundle.logo = {
+          image: logos[0],
+          instruction: `Reproduce this brand logo EXACTLY at ${intent.logoPlacement}. Do not modify its colors, proportions, or design. Ensure it is clearly legible against the background.`,
+        };
+      }
+
+      // Assign style references from gallery/
+      const gallery = imagesBySubfolder.get('gallery') || [];
+      for (const img of gallery.slice(0, 2)) {
+        bundle.styleReferences.push({
+          image: img,
+          instruction:
+            "Match this past creative's color palette, visual richness, and premium aesthetic. Do NOT copy its layout — only its visual style and color grading.",
+        });
+      }
+
+      // Assign scene references from renders/ or photos/
+      const renders = imagesBySubfolder.get('renders') || [];
+      const photos = imagesBySubfolder.get('photos') || [];
+      const sceneImages = [...renders, ...photos].slice(0, 2);
+      for (const img of sceneImages) {
+        bundle.sceneReferences.push({
+          image: img,
+          instruction:
+            'Use as background scene reference or compositional context for the creative.',
+        });
+      }
+
+      // Fetch brand rules text from brand-guide/ subfolder
+      if (intent.requiredAssets.includes('brand-guide')) {
+        const brandGuideText =
+          await this._googleDriveService.getTextFromSubfolder(
+            projectRootFolderId,
+            'brand-guide'
+          );
+
+        if (brandGuideText) {
+          bundle.brandRules = {
+            text: brandGuideText,
+            colorPalette: this._extractColors(brandGuideText),
+            fonts: this._extractFonts(brandGuideText),
+          };
+        }
+      }
+
+      // Fallback: if no logo found, try to get parent logo from root
+      if (!bundle.logo) {
+        try {
+          // Discover parent folder by checking root for shared logos
+          const subfolders =
+            await this._googleDriveService.discoverSubfolders(
+              projectRootFolderId
+            );
+          this._logger.warn(
+            `No logo found in project subfolder. Available subfolders: ${[...subfolders.keys()].join(', ')}`
+          );
+        } catch {
+          // ignore
+        }
+      }
+
+      this._logger.log(
+        `Assembled asset bundle: logo=${!!bundle.logo}, styles=${bundle.styleReferences.length}, scenes=${bundle.sceneReferences.length}, rules=${!!bundle.brandRules}`
+      );
+    } catch (err: any) {
+      this._logger.error(
+        `Failed to assemble targeted assets: ${err.message}`
+      );
+    }
+
+    return bundle;
+  }
+
+  /**
+   * Extract color hex codes from brand guide text.
+   */
+  private _extractColors(text: string): string[] {
+    const hexPattern = /#[0-9A-Fa-f]{6}\b/g;
+    const matches = text.match(hexPattern) || [];
+    return [...new Set(matches)];
+  }
+
+  /**
+   * Extract font names from brand guide text.
+   */
+  private _extractFonts(text: string): string[] {
+    const fontPatterns = [
+      /font[- ]?family[:\s]+["']?([^"'\n,;]+)/gi,
+      /typeface[:\s]+["']?([^"'\n,;]+)/gi,
+      /(Montserrat|Playfair|Roboto|Open Sans|Lato|Poppins|Raleway|Cormorant|DM Sans|Inter|Nunito|Merriweather|Georgia|Garamond|Futura|Helvetica|Arial)/gi,
+    ];
+
+    const fonts = new Set<string>();
+    for (const pattern of fontPatterns) {
+      const matches = text.matchAll(pattern);
+      for (const match of matches) {
+        if (match[1]) {
+          fonts.add(match[1].trim());
+        }
+      }
+    }
+    return [...fonts];
   }
 }

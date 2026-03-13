@@ -40,6 +40,16 @@ const SUPPORTED_MIME_TYPES = [
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_TOTAL_OUTPUT = 50 * 1024; // 50KB text cap
 
+const STANDARD_SUBFOLDERS = [
+  'logos',
+  'brand-guide',
+  'gallery',
+  'renders',
+  'photos',
+  'brochures',
+  'floorplans',
+] as const;
+
 @Injectable()
 export class GoogleDriveService {
   private readonly _logger = new Logger(GoogleDriveService.name);
@@ -326,5 +336,150 @@ export class GoogleDriveService {
       );
       return [];
     }
+  }
+
+  /**
+   * Discovers standard subfolders in a project root Drive folder.
+   * Returns a map of normalized subfolder name → Google Drive folder ID.
+   */
+  async discoverSubfolders(
+    rootFolderId: string
+  ): Promise<Map<string, string>> {
+    const subfolderMap = new Map<string, string>();
+    if (!this._drive || !rootFolderId) return subfolderMap;
+
+    try {
+      const contents = await this.listFolderContents(rootFolderId);
+
+      for (const item of contents) {
+        if (item.isFolder) {
+          const normalized = item.name
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-');
+          if (
+            (STANDARD_SUBFOLDERS as readonly string[]).includes(normalized)
+          ) {
+            subfolderMap.set(normalized, item.id);
+          }
+        }
+      }
+
+      this._logger.log(
+        `Discovered ${subfolderMap.size} subfolders in root folder ${rootFolderId}: ${[...subfolderMap.keys()].join(', ')}`
+      );
+    } catch (err: any) {
+      this._logger.error(
+        `Failed to discover subfolders in ${rootFolderId}: ${err.message}`
+      );
+    }
+
+    return subfolderMap;
+  }
+
+  /**
+   * Fetches images from specific subfolders based on the intent's requiredAssets.
+   * Returns a map of subfolder name → DriveImage[].
+   */
+  async getImagesFromSubfolders(
+    rootFolderId: string,
+    subfolderNames: string[],
+    maxPerSubfolder = 2
+  ): Promise<Map<string, DriveImage[]>> {
+    const results = new Map<string, DriveImage[]>();
+    if (!this._drive || !rootFolderId) return results;
+
+    const subfolderMap = await this.discoverSubfolders(rootFolderId);
+
+    for (const name of subfolderNames) {
+      const folderId = subfolderMap.get(name);
+      if (!folderId) {
+        this._logger.warn(
+          `Subfolder "${name}" not found in Drive folder ${rootFolderId}`
+        );
+        results.set(name, []);
+        continue;
+      }
+
+      try {
+        // Reuse existing image fetch logic with custom limit
+        const response = await this._drive!.files.list({
+          q: `'${folderId}' in parents and trashed = false`,
+          fields: 'files(id, name, mimeType, size, modifiedTime)',
+          pageSize: 50,
+          orderBy: 'modifiedTime desc',
+        });
+
+        const files = (response.data.files || []).filter((f) => {
+          if (!f.mimeType || !IMAGE_MIME_TYPES.includes(f.mimeType))
+            return false;
+          const size = f.size ? parseInt(f.size, 10) : 0;
+          if (size > MAX_IMAGE_SIZE) {
+            this._logger.warn(
+              `Skipping large image: ${f.name} (${size} bytes)`
+            );
+            return false;
+          }
+          return true;
+        });
+
+        const images: DriveImage[] = [];
+        for (const file of files.slice(0, maxPerSubfolder)) {
+          try {
+            const imgResponse = await this._drive!.files.get(
+              { fileId: file.id!, alt: 'media' },
+              { responseType: 'arraybuffer' }
+            );
+
+            const buffer = Buffer.from(imgResponse.data as ArrayBuffer);
+            images.push({
+              name: file.name || 'unknown',
+              mimeType: file.mimeType!,
+              base64: buffer.toString('base64'),
+              fileId: file.id!,
+            });
+          } catch (imgErr: any) {
+            this._logger.warn(
+              `Failed to download image ${file.name}: ${imgErr.message}`
+            );
+          }
+        }
+
+        results.set(name, images);
+        this._logger.log(
+          `Fetched ${images.length} images from subfolder "${name}"`
+        );
+      } catch (err: any) {
+        this._logger.error(
+          `Failed to fetch images from subfolder "${name}": ${err.message}`
+        );
+        results.set(name, []);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Extracts text content from a specific subfolder (e.g., brand-guide/).
+   * Returns concatenated text from Google Docs, PDFs, and text files.
+   */
+  async getTextFromSubfolder(
+    rootFolderId: string,
+    subfolderName: string
+  ): Promise<string> {
+    if (!this._drive || !rootFolderId) return '';
+
+    const subfolderMap = await this.discoverSubfolders(rootFolderId);
+    const folderId = subfolderMap.get(subfolderName);
+
+    if (!folderId) {
+      this._logger.warn(
+        `Subfolder "${subfolderName}" not found for text extraction`
+      );
+      return '';
+    }
+
+    return this.getTextFromDriveFolder(folderId);
   }
 }
